@@ -6,63 +6,63 @@
 <style>
   :root {
     --orange: #D77757;
+    --orange-2: #f0916b;
     --blue: #5769F7;
-    --bg: #1a1410;
-    --bg-2: #221913;
+    --bg: #14100c;
+    --bg-2: #1f1814;
     --surface: #2a1f1a;
-    --surface-2: #352720;
+    --surface-2: #3a2a22;
     --text: #ebdcc8;
     --text-muted: #8a7c6c;
     --border: rgba(215, 119, 87, 0.25);
+    --border-strong: rgba(215, 119, 87, 0.5);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     overflow: hidden;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-  #canvas { display: block; }
+  #canvas { display: block; cursor: grab; }
+  #canvas.grabbing { cursor: grabbing; }
 
-  /* Header */
   .header {
     position: absolute; top: 0; left: 0; right: 0;
     padding: 18px 24px;
     display: flex; justify-content: space-between; align-items: center;
-    pointer-events: none;
     z-index: 10;
-    background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
+    background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+    pointer-events: none;
   }
-  .header .brand { display: flex; flex-direction: column; }
+  .header .brand { pointer-events: auto; }
   .header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.3px; }
   .header h1 .accent { color: var(--orange); }
   .header .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
   .header .stats {
+    pointer-events: auto;
     font-size: 12px; color: var(--text-muted);
-    background: rgba(42, 31, 26, 0.6);
-    backdrop-filter: blur(8px);
+    background: rgba(42, 31, 26, 0.7);
+    backdrop-filter: blur(10px);
     padding: 8px 14px; border-radius: 20px;
     border: 1px solid var(--border);
-    pointer-events: auto;
   }
   .header .stats b { color: var(--orange); font-weight: 600; }
 
-  /* Legend */
   .legend {
     position: absolute;
     bottom: 24px; left: 24px;
-    background: rgba(42, 31, 26, 0.85);
+    background: rgba(42, 31, 26, 0.88);
     backdrop-filter: blur(10px);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 14px 18px;
     font-size: 11px;
     z-index: 10;
-    min-width: 160px;
+    min-width: 170px;
   }
-  .legend .title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); margin-bottom: 8px; }
+  .legend .title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
   .legend .item { display: flex; align-items: center; gap: 10px; margin: 5px 0; }
   .legend .dot { width: 8px; height: 8px; border-radius: 50%; }
   .dot.green { background: #6dcc92; box-shadow: 0 0 8px #6dcc92; }
@@ -70,22 +70,20 @@
   .dot.red { background: #d96565; box-shadow: 0 0 8px #d96565; }
   .dot.grey { background: #5a4f47; }
 
-  /* Side panel */
   .panel {
     position: absolute;
     top: 70px; right: 24px;
-    width: 380px;
-    max-height: calc(100vh - 100px);
-    background: rgba(42, 31, 26, 0.96);
+    width: 400px;
+    max-height: calc(100vh - 110px);
+    background: rgba(31, 24, 20, 0.97);
     backdrop-filter: blur(14px);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     overflow: hidden;
     transform: translateX(120%);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 20;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
     display: flex; flex-direction: column;
   }
   .panel.open { transform: translateX(0); }
@@ -93,16 +91,17 @@
     padding: 22px 24px 18px;
     border-bottom: 1px solid rgba(215, 119, 87, 0.15);
     position: relative;
+    background: linear-gradient(180deg, rgba(215,119,87,0.06) 0%, transparent 100%);
   }
   .panel .close {
     position: absolute; top: 16px; right: 18px;
     background: none; border: none; color: var(--text-muted);
-    font-size: 24px; cursor: pointer; line-height: 1;
-    width: 28px; height: 28px; border-radius: 50%;
+    font-size: 22px; cursor: pointer; line-height: 1;
+    width: 30px; height: 30px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.2s;
   }
-  .panel .close:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .panel .close:hover { color: var(--text); background: rgba(255,255,255,0.06); }
   .panel .panel-body {
     padding: 18px 24px 24px;
     overflow-y: auto;
@@ -116,20 +115,35 @@
     color: white;
     margin-bottom: 14px;
     letter-spacing: 0.5px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
   }
-  .panel h2 { font-size: 19px; font-weight: 600; margin-bottom: 3px; letter-spacing: -0.2px; }
-  .panel .role { color: var(--orange); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500; }
+  .panel h2 {
+    font-size: 19px; font-weight: 600; margin-bottom: 3px;
+    letter-spacing: -0.2px;
+    outline: none;
+    padding: 2px 6px;
+    margin-left: -6px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .panel h2:focus { background: rgba(215, 119, 87, 0.12); }
+  .panel h2[contenteditable="true"] { cursor: text; border-bottom: 1px dashed var(--orange); }
+  .panel .edit-hint {
+    font-size: 10px; color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .panel .role { color: var(--orange); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; margin-top: 4px; }
   .panel .section { margin: 16px 0; }
-  .panel .section-title { font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.5px; margin-bottom: 8px; font-weight: 500; }
+  .panel .section-title { font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.5px; margin-bottom: 8px; font-weight: 600; }
   .panel .section-body { font-size: 13px; line-height: 1.6; color: var(--text); }
   .panel .status-pill {
     display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(255,255,255,0.04);
+    background: rgba(255,255,255,0.05);
     padding: 6px 12px; border-radius: 20px;
     font-size: 12px;
   }
   .panel .mission {
-    background: rgba(215, 119, 87, 0.08);
+    background: rgba(215, 119, 87, 0.1);
     border-left: 3px solid var(--orange);
     padding: 12px 14px; border-radius: 6px;
     font-size: 12px; line-height: 1.5;
@@ -137,16 +151,16 @@
   .panel .code-chip {
     font-family: 'SF Mono', Menlo, monospace;
     font-size: 11px;
-    background: rgba(0,0,0,0.35);
+    background: rgba(0,0,0,0.4);
     padding: 8px 12px;
     border-radius: 6px;
     color: var(--orange);
     border: 1px solid rgba(215, 119, 87, 0.15);
     display: inline-block;
   }
-  .panel .invoke-btn {
+  .panel .btn {
     width: 100%;
-    margin-top: 12px;
+    margin-top: 10px;
     background: var(--orange);
     color: white;
     border: none;
@@ -157,71 +171,136 @@
     cursor: pointer;
     transition: background 0.2s;
   }
-  .panel .invoke-btn:hover { background: #c46a4a; }
+  .panel .btn:hover { background: var(--orange-2); }
+  .panel .btn.ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .panel .btn.ghost:hover { background: rgba(215, 119, 87, 0.08); }
+
+  /* Manager (chef) panel — team grid */
+  .team-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .team-grid .card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .team-grid .card:hover {
+    border-color: var(--border-strong);
+    background: rgba(215, 119, 87, 0.05);
+  }
+  .team-grid .card .name {
+    font-size: 12px; font-weight: 600;
+    outline: none;
+    padding: 1px 4px; margin-left: -4px;
+    border-radius: 3px;
+  }
+  .team-grid .card .name:focus { background: rgba(215, 119, 87, 0.12); border-bottom: 1px dashed var(--orange); }
+  .team-grid .card .role-mini { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .team-grid .card .stat-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 10px; }
+  .team-grid .card .stat-row .dot { width: 6px; height: 6px; border-radius: 50%; }
 
   .hint {
     position: absolute;
     bottom: 24px; right: 24px;
     font-size: 11px;
     color: var(--text-muted);
-    text-align: right;
-    background: rgba(42, 31, 26, 0.6);
-    backdrop-filter: blur(8px);
-    padding: 10px 14px;
-    border-radius: 8px;
+    background: rgba(42, 31, 26, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 12px 16px;
+    border-radius: 10px;
     border: 1px solid var(--border);
-    line-height: 1.6;
+    line-height: 1.7;
+    max-width: 260px;
+  }
+  .hint b { color: var(--orange); }
+  .hint kbd {
+    background: rgba(255,255,255,0.08);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-family: monospace;
   }
 
-  /* Tooltip */
   .tooltip {
     position: fixed;
     pointer-events: none;
-    background: rgba(42, 31, 26, 0.96);
-    border: 1px solid var(--border);
+    background: rgba(31, 24, 20, 0.97);
+    border: 1px solid var(--border-strong);
     color: var(--text);
-    padding: 7px 11px;
+    padding: 8px 12px;
     border-radius: 8px;
     font-size: 11px;
     opacity: 0;
     transition: opacity 0.15s;
     z-index: 30;
     white-space: nowrap;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
   }
   .tooltip .t-name { font-weight: 600; }
   .tooltip .t-role { color: var(--orange); font-size: 10px; margin-top: 1px; }
   .tooltip.show { opacity: 1; }
 
-  /* Loading */
   .loader {
     position: fixed; inset: 0;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; gap: 16px;
+    align-items: center; justify-content: center;
     background: var(--bg);
     z-index: 100;
     transition: opacity 0.5s;
   }
   .loader .spin {
-    width: 40px; height: 40px;
+    width: 36px; height: 36px;
     border: 2px solid var(--surface-2);
     border-top-color: var(--orange);
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
+  .loader .lbl { font-size: 12px; color: var(--text-muted); }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loader.hidden { opacity: 0; pointer-events: none; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px; left: 50%;
+    transform: translate(-50%, 30px);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    padding: 10px 18px;
+    border-radius: 24px;
+    font-size: 12px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 40;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
 </style>
 </head>
 <body>
 
-<div class="loader" id="loader"><div class="spin"></div></div>
+<div class="loader" id="loader">
+  <div class="spin"></div>
+  <div class="lbl">Chargement du bureau...</div>
+</div>
 
 <canvas id="canvas"></canvas>
 
 <div class="header">
   <div class="brand">
     <h1>Bureau virtuel — <span class="accent">Trading Algo Team</span></h1>
-    <div class="sub">8 agents · open-space</div>
+    <div class="sub">8 vitrines · 1 direction · open-space circulaire</div>
   </div>
   <div class="stats"><b id="busy-count">0</b> en mission · <b id="avail-count">0</b> disponibles</div>
 </div>
@@ -248,9 +327,13 @@
 </div>
 
 <div class="hint">
-  🖱️ <b>Glisser</b> orbite · <b>Molette</b> zoom<br>
-  <b>Clic</b> sur un agent → fiche
+  <b>Molette</b> = tourner la pièce (360°)<br>
+  <b>Glisser</b> = orbiter librement<br>
+  <kbd>Shift</kbd>+<b>molette</b> = zoom<br>
+  <b>Clic</b> agent → fiche · <b>Clic</b> bureau central → direction
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script type="importmap">
 {
@@ -266,121 +349,74 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // ============================================================
-// DATA — les 8 agents (synchronisé avec .claude/agents/*.md)
+// DATA — agents (avec overrides localStorage pour le nom)
 // ============================================================
-const AGENTS = [
-  {
-    id: 'quant-strategist',
-    name: 'Olivier Vasseur',
-    role: 'Quant Strategist',
-    initials: 'OV',
-    color: 0xD77757,
-    skin: 0xe8c5a0,
+const DEFAULT_AGENTS = [
+  { id: 'quant-strategist',        name: 'Olivier Vasseur',   role: 'Quant Strategist',       initials: 'OV', color: 0xD77757, skin: 0xe8c5a0,
     background: 'PhD Polytechnique. 20 ans en hedge funds : 8 ans Renaissance Technologies (Medallion), 5 ans DE Shaw, 7 ans CTA parisien.',
-    mandate: 'Identifie les edges statistiques. Diagnostic de régime de marché. Choix actif/timeframe/session. Détecte les régime shifts avant qu\'ils ne tuent le PnL.',
+    mandate: 'Identifie les edges statistiques. Diagnostic de régime de marché. Choix actif/timeframe/session. Détecte les régime shifts.',
     motto: '« Le marché paie pour assumer un risque qu\'il ne veut pas porter. »',
-    status: 'available',
-    mission: null,
-  },
-  {
-    id: 'mql5-developer',
-    name: 'Marc Tournier',
-    role: 'MQL5 Developer',
-    initials: 'MT',
-    color: 0x6da8d7,
-    skin: 0xd9b48c,
-    background: '15 ans MQL. 6 ans chez un broker FX (intégration EAs clients), 9 ans freelance. 200+ EAs livrés, 3 packages CodeBase MQL5 (50k+ downloads).',
-    mandate: 'Écrit, debug et optimise les EAs en MQL5/MQL4. Maîtrise CTrade, CPositionInfo, handles d\'indicateurs. Vérifie la cohérence MT5.',
+    status: 'available', mission: null },
+  { id: 'mql5-developer',          name: 'Marc Tournier',     role: 'MQL5 Developer',         initials: 'MT', color: 0x6da8d7, skin: 0xd9b48c,
+    background: '15 ans MQL. 6 ans chez un broker FX, 9 ans freelance. 200+ EAs livrés, 3 packages CodeBase MQL5 (50k+ downloads).',
+    mandate: 'Écrit, debug et optimise les EAs en MQL5/MQL4. Maîtrise CTrade, CPositionInfo, handles d\'indicateurs.',
     motto: '« Le bug n\'est jamais où tu crois. Lis les logs avant de toucher au code. »',
-    status: 'busy',
-    mission: 'Refactor anti-stacking sur EA XAU v1.5',
-  },
-  {
-    id: 'backtest-auditor',
-    name: 'Hélène Beaumont',
-    role: 'Backtest Auditor',
-    initials: 'HB',
-    color: 0xa68bc9,
-    skin: 0xe8c5a0,
-    background: 'Master HEC + CFA. 10 ans risk officer BNP Paribas CIB (Model Validation), 5 ans audit interne Man AHL, 3 ans consultante family offices.',
-    mandate: 'Audit statistique des backtests .xlsx. Calcule Sharpe/Sortino/Calmar/MAR/Profit Factor/Pain Index. Détecte over-fitting, look-ahead, survivorship. Rend verdict DÉPLOYABLE / À REVOIR / INUTILISABLE.',
+    status: 'busy', mission: 'Refactor anti-stacking EA XAU v1.5' },
+  { id: 'backtest-auditor',        name: 'Hélène Beaumont',   role: 'Backtest Auditor',       initials: 'HB', color: 0xa68bc9, skin: 0xe8c5a0,
+    background: 'Master HEC + CFA. 10 ans risk officer BNP Paribas CIB, 5 ans audit interne Man AHL, 3 ans consultante family offices.',
+    mandate: 'Audit statistique des backtests. Sharpe/Sortino/Calmar/PF. Détecte over-fitting. Verdict DÉPLOYABLE / À REVOIR / INUTILISABLE.',
     motto: '« Tout backtest est un mensonge jusqu\'à preuve du contraire. »',
-    status: 'busy',
-    mission: 'Audit backtest XAU GoldVirtuoso 2025',
-  },
-  {
-    id: 'risk-manager',
-    name: 'Pierre-Louis Cheval',
-    role: 'Risk Manager',
-    initials: 'PC',
-    color: 0xc47163,
-    skin: 0xe8c5a0,
-    background: 'Master Risk Management HEC + FRM. 8 ans Winton Capital ($25B AUM), 7 ans head of risk family office Genève, 5 ans conseil traders algos.',
-    mandate: 'Définit position sizing (max 2 % par trade, quart-Kelly). Limites journalières/hebdo/mensuelles. Stress testing. Kill switches absolus. Audit exposition réelle et stacking.',
+    status: 'busy', mission: 'Audit backtest XAU GoldVirtuoso 2025' },
+  { id: 'risk-manager',            name: 'Pierre-Louis Cheval', role: 'Risk Manager',         initials: 'PC', color: 0xc47163, skin: 0xe8c5a0,
+    background: 'Master Risk Management HEC + FRM. 8 ans Winton Capital, 7 ans head of risk family office, 5 ans conseil.',
+    mandate: 'Position sizing (max 2 %/trade, quart-Kelly). Limites journalières/hebdo/mensuelles. Stress testing. Kill switches.',
     motto: '« Le premier travail d\'un trader, c\'est de rester dans le jeu. »',
-    status: 'available',
-    mission: null,
-  },
-  {
-    id: 'data-scientist',
-    name: 'Yuna Nakamura',
-    role: 'Data Scientist',
-    initials: 'YN',
-    color: 0x5dbab0,
-    skin: 0xf0d4b3,
-    background: 'PhD Statistiques appliquées Berkeley. Ex-Kaggle Grandmaster. 3 ans Alpaca (crypto MM), 5 ans Susquehanna (options + ML), 4 ans freelance CTAs.',
-    mandate: 'Analyse data-driven sur logs CSV. Feature engineering. ML uniquement si justifié (rarement). Tests de significativité, walk-forward CV, ONNX export.',
+    status: 'available', mission: null },
+  { id: 'data-scientist',          name: 'Yuna Nakamura',     role: 'Data Scientist',         initials: 'YN', color: 0x5dbab0, skin: 0xf0d4b3,
+    background: 'PhD Berkeley. Ex-Kaggle Grandmaster. 3 ans Alpaca, 5 ans Susquehanna, 4 ans freelance CTAs.',
+    mandate: 'Analyse data-driven sur logs. Feature engineering. ML si justifié. Walk-forward CV, ONNX export.',
     motto: '« Le ML est un marteau. Pas tout n\'est un clou. »',
-    status: 'available',
-    mission: null,
-  },
-  {
-    id: 'forward-test-watchman',
-    name: 'Sébastien Reverdy',
-    role: 'Forward Test Watchman',
-    initials: 'SR',
-    color: 0xe0a050,
-    skin: 0xd9b48c,
-    background: '18 ans execution trader. 7 ans Crédit Agricole CIB (desk FX), 6 ans head of execution broker prime Londres, 5 ans CTA "production gap".',
-    mandate: 'Audit hebdomadaire forward test. Compare démo/live vs backtest. Score de drift. Détection précoce des dérives (spread, slippage, news).',
+    status: 'available', mission: null },
+  { id: 'forward-test-watchman',   name: 'Sébastien Reverdy', role: 'Forward Test Watchman',  initials: 'SR', color: 0xe0a050, skin: 0xd9b48c,
+    background: '18 ans execution trader. Crédit Agricole CIB, head of execution broker prime Londres, CTA production gap.',
+    mandate: 'Audit hebdomadaire forward test. Compare démo/live vs backtest. Score de drift.',
     motto: '« Le backtest est un fantasme. Le forward test est la vérité. »',
-    status: 'busy',
-    mission: 'Drift report semaine 23 — XAU',
-  },
-  {
-    id: 'discipline-coach',
-    name: 'Aïcha Diop',
-    role: 'Discipline Coach',
-    initials: 'AD',
-    color: 0xd49aa8,
-    skin: 0xa67c52,
-    background: 'Master Behavioral Finance LSE + DESS Psychologie. 8 ans trader prop firm (FTMO, Topstep), 4 ans formatrice, 8 ans psychologue financière (200+ clients).',
-    mandate: 'Tient le journal de trading. Détecte les biais (récence, aversion, FOMO, revenge). Impose les règles écrites. Check-ins quotidiens et mensuels. Prépare aux pertes.',
+    status: 'busy', mission: 'Drift report semaine 23 — XAU' },
+  { id: 'discipline-coach',        name: 'Aïcha Diop',        role: 'Discipline Coach',       initials: 'AD', color: 0xd49aa8, skin: 0xa67c52,
+    background: 'Master LSE + DESS Psychologie. 8 ans prop firm trader, 4 ans formatrice, 8 ans psychologue financière (200+ clients).',
+    mandate: 'Tient le journal de trading. Détecte les biais (récence, FOMO, revenge). Impose les règles écrites.',
     motto: '« La technique compte pour 20 %. Le mental compte pour 80 %. »',
-    status: 'available',
-    mission: null,
-  },
-  {
-    id: 'broker-execution-specialist',
-    name: 'Thomas Reinhardt',
-    role: 'Broker Specialist',
-    initials: 'TR',
-    color: 0x5769F7,
-    skin: 0xe8c5a0,
-    background: 'Series 7 + MIFID II. 5 ans sales trader broker prime Londres, 4 ans relationship manager IC Markets, 6 ans consultant indépendant (200+ audits broker).',
-    mandate: 'Audit brokers (spreads réels, commissions, slippage, latence, swaps, régulation). Mapping stratégie ↔ broker. Optimisation VPS, choix data center, setup symboles.',
+    status: 'available', mission: null },
+  { id: 'broker-execution-specialist', name: 'Thomas Reinhardt', role: 'Broker Specialist',   initials: 'TR', color: 0x5769F7, skin: 0xe8c5a0,
+    background: 'Series 7 + MIFID II. 5 ans sales trader Londres, 4 ans IC Markets, 6 ans consultant (200+ audits broker).',
+    mandate: 'Audit brokers (spreads, commissions, slippage, latence, swaps). Mapping stratégie ↔ broker. Setup VPS.',
     motto: '« Tu ne trades pas le marché. Tu trades à travers un broker. »',
-    status: 'off',
-    mission: null,
-  },
+    status: 'off', mission: null },
 ];
 
-const STATUS_COLORS = {
-  available: 0x6dcc92,
-  busy: 0xe0a050,
-  alert: 0xd96565,
-  off: 0x5a4f47,
+// Le "chef" — interactable mais pas un agent système
+const CHEF = {
+  id: 'chef',
+  name: 'Direction',
+  role: 'Bureau du chef',
+  color: 0xD77757,
 };
+
+// Charger les overrides depuis localStorage
+function loadOverrides() {
+  try { return JSON.parse(localStorage.getItem('trading-office-overrides') || '{}'); }
+  catch { return {}; }
+}
+function saveOverrides(data) {
+  localStorage.setItem('trading-office-overrides', JSON.stringify(data));
+}
+const overrides = loadOverrides();
+const AGENTS = DEFAULT_AGENTS.map(a => {
+  const ov = overrides[a.id] || {};
+  return { ...a, name: ov.name || a.name };
+});
+
+const STATUS_COLORS = { available: 0x6dcc92, busy: 0xe0a050, alert: 0xd96565, off: 0x5a4f47 };
 const STATUS_LABEL = {
   available: { label: 'Disponible', hex: '#6dcc92' },
   busy: { label: 'En mission', hex: '#e0a050' },
@@ -389,19 +425,19 @@ const STATUS_LABEL = {
 };
 
 // ============================================================
-// SCENE
+// SCENE / CAMERA / RENDERER
 // ============================================================
 const canvas = document.getElementById('canvas');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1a1410);
-scene.fog = new THREE.Fog(0x1a1410, 28, 65);
+scene.background = new THREE.Color(0x14100c);
+scene.fog = new THREE.Fog(0x14100c, 32, 75);
 
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
-camera.position.set(20, 16, 22);
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 14, 28);
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -410,239 +446,392 @@ renderer.toneMappingExposure = 1.0;
 const controls = new OrbitControls(camera, canvas);
 controls.target.set(0, 2, 0);
 controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.minDistance = 10;
-controls.maxDistance = 40;
+controls.dampingFactor = 0.07;
+controls.enableZoom = false; // molette = rotation (gérée plus bas)
+controls.minDistance = 8;
+controls.maxDistance = 50;
 controls.maxPolarAngle = Math.PI / 2.1;
+controls.minPolarAngle = 0.2;
+
+// Wheel custom : molette = rotation horizontale 360° ; shift+molette = zoom
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  if (e.shiftKey) {
+    // Zoom : déplace la caméra le long du vecteur vers la cible
+    const dir = new THREE.Vector3().subVectors(camera.position, controls.target);
+    const len = dir.length();
+    const newLen = Math.max(controls.minDistance, Math.min(controls.maxDistance, len * (1 + e.deltaY * 0.001)));
+    dir.setLength(newLen);
+    camera.position.copy(controls.target).add(dir);
+  } else {
+    // Rotation horizontale autour du centre de la pièce
+    const az = controls.getAzimuthalAngle();
+    controls.setAzimuthalAngle(az + e.deltaY * 0.003);
+  }
+}, { passive: false });
+
+canvas.addEventListener('pointerdown', () => canvas.classList.add('grabbing'));
+canvas.addEventListener('pointerup',   () => canvas.classList.remove('grabbing'));
 
 // ============================================================
-// LIGHTING — warm, considered
+// LIGHTING
 // ============================================================
-scene.add(new THREE.AmbientLight(0xfff0e0, 0.35));
+scene.add(new THREE.AmbientLight(0xfff0e0, 0.42));
 
-const sun = new THREE.DirectionalLight(0xffd4a8, 0.7);
-sun.position.set(12, 18, 6);
+const sun = new THREE.DirectionalLight(0xffd4a8, 0.55);
+sun.position.set(12, 20, 8);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.camera.left = -18;
-sun.shadow.camera.right = 18;
-sun.shadow.camera.top = 18;
-sun.shadow.camera.bottom = -18;
+sun.shadow.camera.left = -22;
+sun.shadow.camera.right = 22;
+sun.shadow.camera.top = 22;
+sun.shadow.camera.bottom = -22;
 sun.shadow.bias = -0.0005;
 scene.add(sun);
 
-// Ceiling warm pendants
-const pendants = [];
-for (const [px, pz] of [[-9, 0], [-3, 0], [3, 0], [9, 0]]) {
-  const pendantGroup = new THREE.Group();
-  const cord = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.02, 0.02, 1.5),
-    new THREE.MeshStandardMaterial({ color: 0x1a1410 })
-  );
-  cord.position.set(px, 6.5, pz);
-  scene.add(cord);
+// Pendant central (au-dessus du bureau du chef)
+const chefPendant = new THREE.PointLight(0xffc28a, 1.2, 16, 1.6);
+chefPendant.position.set(0, 6, 0);
+scene.add(chefPendant);
 
-  const shade = new THREE.Mesh(
-    new THREE.ConeGeometry(0.4, 0.4, 16, 1, true),
-    new THREE.MeshStandardMaterial({ color: 0x3a2a22, side: THREE.DoubleSide, emissive: 0xffaa66, emissiveIntensity: 0.3 })
-  );
-  shade.position.set(px, 5.55, pz);
-  scene.add(shade);
-
-  const bulb = new THREE.PointLight(0xffc28a, 0.7, 18, 1.8);
-  bulb.position.set(px, 5.3, pz);
-  scene.add(bulb);
-  pendants.push(bulb);
-}
+const pendantList = [chefPendant];
 
 // ============================================================
-// ROOM (floor, walls, ceiling hint)
+// ROOM — circulaire, parquet en bandes radiales, mur cylindrique
 // ============================================================
-const floorMat = new THREE.MeshStandardMaterial({ color: 0x2a1f1a, roughness: 0.88 });
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(45, 35), floorMat);
+const ROOM_RADIUS = 22;
+
+// Sol parquet
+const floorMat = new THREE.MeshStandardMaterial({ color: 0x3a2a1f, roughness: 0.82 });
+const floor = new THREE.Mesh(new THREE.CircleGeometry(ROOM_RADIUS, 64), floorMat);
 floor.rotation.x = -Math.PI / 2;
 floor.receiveShadow = true;
 scene.add(floor);
 
-// Rug under central plant
-const rugMat = new THREE.MeshStandardMaterial({ color: 0x553828, roughness: 0.95 });
-const rug = new THREE.Mesh(new THREE.CircleGeometry(3, 32), rugMat);
+// Tapis central rond sous le bureau du chef
+const rug = new THREE.Mesh(
+  new THREE.CircleGeometry(5, 48),
+  new THREE.MeshStandardMaterial({ color: 0x603e2b, roughness: 0.95 })
+);
 rug.rotation.x = -Math.PI / 2;
 rug.position.y = 0.01;
 rug.receiveShadow = true;
 scene.add(rug);
 
-const wallMat = new THREE.MeshStandardMaterial({ color: 0x3a2a22, roughness: 0.92 });
-const wallBack = new THREE.Mesh(new THREE.PlaneGeometry(45, 9), wallMat);
-wallBack.position.set(0, 4.5, -17);
-wallBack.receiveShadow = true;
-scene.add(wallBack);
+// Liseré orange sur le tapis
+const rugRing = new THREE.Mesh(
+  new THREE.RingGeometry(4.7, 4.85, 64),
+  new THREE.MeshStandardMaterial({ color: 0xD77757, roughness: 0.7, emissive: 0xD77757, emissiveIntensity: 0.15 })
+);
+rugRing.rotation.x = -Math.PI / 2;
+rugRing.position.y = 0.02;
+scene.add(rugRing);
 
-const wallLeft = new THREE.Mesh(new THREE.PlaneGeometry(35, 9), wallMat);
-wallLeft.position.set(-22, 4.5, 0);
-wallLeft.rotation.y = Math.PI / 2;
-wallLeft.receiveShadow = true;
-scene.add(wallLeft);
+// Mur cylindrique
+const wallMat = new THREE.MeshStandardMaterial({
+  color: 0x2e1f17, roughness: 0.95, side: THREE.BackSide
+});
+const wall = new THREE.Mesh(
+  new THREE.CylinderGeometry(ROOM_RADIUS, ROOM_RADIUS, 9, 64, 1, true),
+  wallMat
+);
+wall.position.y = 4.5;
+scene.add(wall);
 
-const wallRight = new THREE.Mesh(new THREE.PlaneGeometry(35, 9), wallMat);
-wallRight.position.set(22, 4.5, 0);
-wallRight.rotation.y = -Math.PI / 2;
-wallRight.receiveShadow = true;
-scene.add(wallRight);
+// Plafond
+const ceiling = new THREE.Mesh(
+  new THREE.CircleGeometry(ROOM_RADIUS, 64),
+  new THREE.MeshStandardMaterial({ color: 0x1a1410, roughness: 0.9, side: THREE.BackSide })
+);
+ceiling.rotation.x = -Math.PI / 2;
+ceiling.position.y = 9;
+scene.add(ceiling);
 
-// "Trading Algo Team" wall sign
+// "Fenêtres" — bandes lumineuses sur les murs pour la chaleur
+for (let i = 0; i < 6; i++) {
+  const angle = (i / 6) * Math.PI * 2;
+  const x = Math.cos(angle) * (ROOM_RADIUS - 0.1);
+  const z = Math.sin(angle) * (ROOM_RADIUS - 0.1);
+  const win = new THREE.Mesh(
+    new THREE.PlaneGeometry(3, 5),
+    new THREE.MeshBasicMaterial({
+      color: 0xffc28a, transparent: true, opacity: 0.6,
+    })
+  );
+  win.position.set(x, 4.5, z);
+  win.lookAt(0, 4.5, 0);
+  scene.add(win);
+
+  const winLight = new THREE.PointLight(0xffc28a, 0.4, 8);
+  winLight.position.set(x * 0.92, 4.5, z * 0.92);
+  scene.add(winLight);
+}
+
+// Enseigne murale "TRADING ALGO" au-dessus de l'entrée
 function makeWallSign() {
   const c = document.createElement('canvas');
   c.width = 1024; c.height = 256;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = 'rgba(0,0,0,0)';
-  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.clearRect(0, 0, c.width, c.height);
   ctx.fillStyle = '#D77757';
-  ctx.font = 'bold 90px "Helvetica Neue", sans-serif';
+  ctx.font = 'bold 92px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('TRADING ALGO', 512, 110);
   ctx.fillStyle = '#ebdcc8';
-  ctx.font = '38px "Helvetica Neue", sans-serif';
-  ctx.fillText('— une équipe systématique —', 512, 180);
+  ctx.font = '32px sans-serif';
+  ctx.fillText('— une équipe systématique —', 512, 170);
   const tex = new THREE.CanvasTexture(c);
   const sign = new THREE.Mesh(
     new THREE.PlaneGeometry(10, 2.5),
     new THREE.MeshBasicMaterial({ map: tex, transparent: true })
   );
-  sign.position.set(0, 5.5, -16.9);
+  sign.position.set(0, 7.2, -ROOM_RADIUS + 0.2);
   scene.add(sign);
 }
 makeWallSign();
 
 // ============================================================
-// DESKS — 8 postes, 2 rangées de 4
+// CUBICLE (vitrine) — bureau + 3 parois en verre + porte
 // ============================================================
-const DESK_POSITIONS = [
-  { x: -10, z: -5, rot: 0 },    // back row
-  { x:  -3, z: -5, rot: 0 },
-  { x:   3, z: -5, rot: 0 },
-  { x:  10, z: -5, rot: 0 },
-  { x: -10, z:  5, rot: Math.PI },  // front row (facing back)
-  { x:  -3, z:  5, rot: Math.PI },
-  { x:   3, z:  5, rot: Math.PI },
-  { x:  10, z:  5, rot: Math.PI },
-];
+const glassMat = new THREE.MeshPhysicalMaterial({
+  color: 0xa8c5e0,
+  transparent: true,
+  opacity: 0.13,
+  roughness: 0.05,
+  metalness: 0,
+  transmission: 0.85,
+  thickness: 0.02,
+  side: THREE.DoubleSide,
+});
+const frameMat = new THREE.MeshStandardMaterial({
+  color: 0x4a2f20, roughness: 0.5, metalness: 0.3,
+});
 
+function makeCubicleShell(agent) {
+  // Le cubicule s'organise dans un repère local :
+  // - sol 4.4 x 4.4
+  // - 3 parois (back, left, right) — front = ouvert (vitrine côté centre)
+  // - frame au-dessus
+  const g = new THREE.Group();
+
+  const W = 4.4;
+  const D = 4.4;
+  const H = 3.0;
+
+  // Plancher du cubicule (légèrement surélevé pour l'effet "vitrine")
+  const floorMat = new THREE.MeshStandardMaterial({
+    color: 0x4a3528, roughness: 0.7,
+  });
+  const cubeFloor = new THREE.Mesh(
+    new THREE.BoxGeometry(W, 0.06, D),
+    floorMat
+  );
+  cubeFloor.position.y = 0.04;
+  cubeFloor.receiveShadow = true;
+  g.add(cubeFloor);
+
+  // Bordure orange du plancher (signature designée)
+  const edgeMat = new THREE.MeshStandardMaterial({
+    color: 0xD77757, emissive: 0xD77757, emissiveIntensity: 0.15, roughness: 0.6,
+  });
+  const edge1 = new THREE.Mesh(new THREE.BoxGeometry(W + 0.04, 0.08, 0.04), edgeMat);
+  edge1.position.set(0, 0.05, -D/2);
+  g.add(edge1);
+  const edge2 = edge1.clone();
+  edge2.position.z = D/2;
+  g.add(edge2);
+  const edge3 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.08, D), edgeMat);
+  edge3.position.set(-W/2, 0.05, 0);
+  g.add(edge3);
+  const edge4 = edge3.clone();
+  edge4.position.x = W/2;
+  g.add(edge4);
+
+  // Paroi du fond (verre)
+  const wallBack = new THREE.Mesh(new THREE.PlaneGeometry(W, H), glassMat);
+  wallBack.position.set(0, H/2 + 0.07, -D/2);
+  g.add(wallBack);
+
+  // Paroi gauche (verre)
+  const wallL = new THREE.Mesh(new THREE.PlaneGeometry(D, H), glassMat);
+  wallL.position.set(-W/2, H/2 + 0.07, 0);
+  wallL.rotation.y = Math.PI / 2;
+  g.add(wallL);
+
+  // Paroi droite (verre)
+  const wallR = new THREE.Mesh(new THREE.PlaneGeometry(D, H), glassMat);
+  wallR.position.set(W/2, H/2 + 0.07, 0);
+  wallR.rotation.y = -Math.PI / 2;
+  g.add(wallR);
+
+  // Cadre supérieur (poutre orange autour)
+  const beamY = H + 0.1;
+  const beam1 = new THREE.Mesh(new THREE.BoxGeometry(W, 0.08, 0.08), frameMat);
+  beam1.position.set(0, beamY, -D/2);
+  g.add(beam1);
+  const beam2 = beam1.clone();
+  beam2.position.z = D/2;
+  g.add(beam2);
+  const beam3 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, D), frameMat);
+  beam3.position.set(-W/2, beamY, 0);
+  g.add(beam3);
+  const beam4 = beam3.clone();
+  beam4.position.x = W/2;
+  g.add(beam4);
+
+  // Poteaux d'angle
+  for (const [px, pz] of [[-W/2,-D/2], [W/2,-D/2], [-W/2,D/2], [W/2,D/2]]) {
+    const post = new THREE.Mesh(new THREE.BoxGeometry(0.1, H + 0.15, 0.1), frameMat);
+    post.position.set(px, H/2 + 0.075, pz);
+    g.add(post);
+  }
+
+  // Pendant lumineux personnel
+  const pCord = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.015, 0.015, 1.5),
+    new THREE.MeshStandardMaterial({ color: 0x1a1410 })
+  );
+  pCord.position.set(0, H - 0.6, 0);
+  g.add(pCord);
+
+  const pShade = new THREE.Mesh(
+    new THREE.ConeGeometry(0.3, 0.25, 16, 1, true),
+    new THREE.MeshStandardMaterial({
+      color: 0x1a1410, side: THREE.DoubleSide,
+      emissive: agent.color, emissiveIntensity: 0.4,
+    })
+  );
+  pShade.position.set(0, H - 1.35, 0);
+  g.add(pShade);
+
+  const pBulb = new THREE.PointLight(agent.color, 0.6, 5, 1.8);
+  pBulb.position.set(0, H - 1.5, 0);
+  g.add(pBulb);
+  pendantList.push(pBulb);
+
+  return g;
+}
+
+// ============================================================
+// AGENT (bureau + chaise + avatar + LED + nameplate) — repère local
+// ============================================================
+const interactables = [];   // pour le raycast
 const agentMeshes = [];
-const interactables = [];
 
-function makeAgent(agent, pos) {
+function makeAgentSetup(agent) {
   const group = new THREE.Group();
-  group.position.set(pos.x, 0, pos.z);
-  group.rotation.y = pos.rot;
 
-  // ---- Desk top
+  // --- Bureau (le bureau est placé contre le mur du fond du cubicule, agent face centre)
   const deskTop = new THREE.Mesh(
-    new THREE.BoxGeometry(4.2, 0.12, 2),
+    new THREE.BoxGeometry(3.4, 0.1, 1.4),
     new THREE.MeshStandardMaterial({ color: 0x5a4030, roughness: 0.6, metalness: 0.1 })
   );
-  deskTop.position.y = 1.0;
+  deskTop.position.set(0, 1.0, -1.2);
   deskTop.castShadow = true;
   deskTop.receiveShadow = true;
   group.add(deskTop);
 
-  // ---- Desk legs (panels)
+  // Pieds bureau
   const legMat = new THREE.MeshStandardMaterial({ color: 0x2a1f18, roughness: 0.8 });
-  const legL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.0, 1.8), legMat);
-  legL.position.set(-2.0, 0.5, 0);
-  legL.castShadow = true;
-  group.add(legL);
-  const legR = legL.clone();
-  legR.position.x = 2.0;
-  group.add(legR);
+  const legA = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.0, 1.2), legMat);
+  legA.position.set(-1.6, 0.5, -1.2);
+  group.add(legA);
+  const legB = legA.clone();
+  legB.position.x = 1.6;
+  group.add(legB);
 
-  // ---- Monitor stand + arm
-  const monitorBase = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.2, 0.25, 0.08),
+  // --- Moniteur (face à l'agent, donc écran vers le centre)
+  const monBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.18, 0.22, 0.06),
     new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.5, roughness: 0.4 })
   );
-  monitorBase.position.set(0, 1.08, -0.4);
-  group.add(monitorBase);
+  monBase.position.set(0, 1.08, -1.6);
+  group.add(monBase);
 
-  const monitorStand = new THREE.Mesh(
-    new THREE.BoxGeometry(0.08, 0.5, 0.08),
+  const monStand = new THREE.Mesh(
+    new THREE.BoxGeometry(0.07, 0.45, 0.07),
     new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.5 })
   );
-  monitorStand.position.set(0, 1.4, -0.4);
-  group.add(monitorStand);
+  monStand.position.set(0, 1.4, -1.6);
+  group.add(monStand);
 
-  // ---- Monitor body
   const monitor = new THREE.Mesh(
-    new THREE.BoxGeometry(2.2, 1.25, 0.1),
+    new THREE.BoxGeometry(1.9, 1.1, 0.08),
     new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.4 })
   );
-  monitor.position.set(0, 1.85, -0.4);
+  monitor.position.set(0, 1.85, -1.6);
   monitor.castShadow = true;
   group.add(monitor);
 
-  // ---- Screen content (canvas texture per agent)
+  // Écran (face vers le centre = +z)
   const screenCanvas = makeScreenCanvas(agent);
   const screenTex = new THREE.CanvasTexture(screenCanvas);
   const screen = new THREE.Mesh(
-    new THREE.PlaneGeometry(2.08, 1.13),
+    new THREE.PlaneGeometry(1.78, 0.98),
     new THREE.MeshBasicMaterial({ map: screenTex })
   );
-  screen.position.set(0, 1.85, -0.34);
+  screen.position.set(0, 1.85, -1.55);
   group.add(screen);
   interactables.push(screen);
 
-  // ---- Keyboard
+  // --- Clavier + mug
   const keyboard = new THREE.Mesh(
-    new THREE.BoxGeometry(1.2, 0.04, 0.35),
+    new THREE.BoxGeometry(1.2, 0.04, 0.32),
     new THREE.MeshStandardMaterial({ color: 0x1a1a1f, roughness: 0.5 })
   );
-  keyboard.position.set(0, 1.08, 0.15);
-  keyboard.castShadow = true;
+  keyboard.position.set(0, 1.08, -1.1);
   group.add(keyboard);
 
-  // ---- Mug (warmth)
   const mug = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.12, 0.1, 0.22, 16),
+    new THREE.CylinderGeometry(0.11, 0.09, 0.2, 16),
     new THREE.MeshStandardMaterial({ color: 0xebdcc8, roughness: 0.7 })
   );
-  mug.position.set(-1.6, 1.17, 0.3);
+  mug.position.set(-1.3, 1.16, -1.0);
   mug.castShadow = true;
   group.add(mug);
 
-  // ---- Chair (seat + back + post)
+  // --- Plante de bureau (warmth personal touch)
+  const plantPot = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.1, 0.18),
+    new THREE.MeshStandardMaterial({ color: 0x6a4a35 })
+  );
+  plantPot.position.set(1.3, 1.16, -1.0);
+  group.add(plantPot);
+  const plantLeaf = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(0.18, 0),
+    new THREE.MeshStandardMaterial({ color: 0x3a5c3a, flatShading: true })
+  );
+  plantLeaf.position.set(1.3, 1.4, -1.0);
+  group.add(plantLeaf);
+
+  // --- Chaise pivot
   const chairMat = new THREE.MeshStandardMaterial({ color: 0x1f1c20, roughness: 0.5 });
-  const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.12, 0.75), chairMat);
-  chairSeat.position.set(0, 0.55, 1.1);
+  const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.1, 0.7), chairMat);
+  chairSeat.position.set(0, 0.55, -0.2);
   chairSeat.castShadow = true;
   group.add(chairSeat);
-
-  const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.1), chairMat);
-  chairBack.position.set(0, 1.1, 1.45);
+  const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.72, 1.0, 0.1), chairMat);
+  chairBack.position.set(0, 1.05, -0.55);
   chairBack.castShadow = true;
   group.add(chairBack);
-
   const chairPost = new THREE.Mesh(
     new THREE.CylinderGeometry(0.04, 0.04, 0.45),
     new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
   );
-  chairPost.position.set(0, 0.27, 1.1);
+  chairPost.position.set(0, 0.27, -0.2);
   group.add(chairPost);
-
   const chairBase = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.4, 0.4, 0.06),
+    new THREE.CylinderGeometry(0.35, 0.35, 0.05),
     new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
   );
-  chairBase.position.set(0, 0.04, 1.1);
+  chairBase.position.set(0, 0.03, -0.2);
   group.add(chairBase);
 
-  // ---- Avatar : capsule body + sphere head + colored "shirt"
+  // --- Avatar (assis sur la chaise)
   const avatarGroup = new THREE.Group();
-  avatarGroup.position.set(0, 0, 1.1);
-
-  // Hidden when off-duty
+  avatarGroup.position.set(0, 0, -0.2);
   avatarGroup.visible = agent.status !== 'off';
 
-  // Lower body (pants)
   const pants = new THREE.Mesh(
     new THREE.CylinderGeometry(0.22, 0.22, 0.55),
     new THREE.MeshStandardMaterial({ color: 0x1a1a22, roughness: 0.7 })
@@ -651,7 +840,6 @@ function makeAgent(agent, pos) {
   pants.castShadow = true;
   avatarGroup.add(pants);
 
-  // Torso (shirt with agent color)
   const torso = new THREE.Mesh(
     new THREE.CapsuleGeometry(0.28, 0.45, 4, 12),
     new THREE.MeshStandardMaterial({ color: agent.color, roughness: 0.55 })
@@ -660,7 +848,6 @@ function makeAgent(agent, pos) {
   torso.castShadow = true;
   avatarGroup.add(torso);
 
-  // Head
   const head = new THREE.Mesh(
     new THREE.SphereGeometry(0.24, 20, 20),
     new THREE.MeshStandardMaterial({ color: agent.skin, roughness: 0.65 })
@@ -669,7 +856,6 @@ function makeAgent(agent, pos) {
   head.castShadow = true;
   avatarGroup.add(head);
 
-  // Hair (slightly darker cap on top)
   const hair = new THREE.Mesh(
     new THREE.SphereGeometry(0.245, 20, 20, 0, Math.PI * 2, 0, Math.PI / 2.4),
     new THREE.MeshStandardMaterial({ color: 0x2a1f15, roughness: 0.8 })
@@ -680,194 +866,104 @@ function makeAgent(agent, pos) {
   interactables.push(torso, head);
   group.add(avatarGroup);
 
-  // ---- Status LED (floating)
-  const ledGeo = new THREE.SphereGeometry(0.1, 16, 16);
-  const ledMat = new THREE.MeshBasicMaterial({ color: STATUS_COLORS[agent.status] });
-  const led = new THREE.Mesh(ledGeo, ledMat);
-  led.position.set(0, 2.95, 0);
+  // --- LED de statut (flotte au-dessus de l'agent)
+  const led = new THREE.Mesh(
+    new THREE.SphereGeometry(0.1, 16, 16),
+    new THREE.MeshBasicMaterial({ color: STATUS_COLORS[agent.status] })
+  );
+  led.position.set(0, 2.85, -0.2);
   group.add(led);
   interactables.push(led);
 
-  const ledLight = new THREE.PointLight(STATUS_COLORS[agent.status], 0.6, 2.5);
-  ledLight.position.set(0, 2.95, 0);
+  const ledLight = new THREE.PointLight(STATUS_COLORS[agent.status], 0.55, 2.2);
+  ledLight.position.copy(led.position);
   group.add(ledLight);
 
-  // ---- Floating name plate (always faces camera)
+  // --- Plaque nominative
   const plate = makeNamePlate(agent);
-  plate.position.set(0, 2.55, 0);
+  plate.position.set(0, 2.45, -0.2);
   group.add(plate);
   interactables.push(plate);
 
-  // Bookkeeping
-  group.userData = { agent, led, ledLight, plate, avatarGroup, torso, head };
-  scene.add(group);
-  agentMeshes.push(group);
-
-  // Map interactables → group for raycast lookup
-  for (const obj of [screen, torso, head, led, plate, deskTop]) {
+  group.userData = { agent, led, ledLight, plate, avatarGroup, torso, screen, screenCanvas };
+  for (const obj of [screen, torso, head, led, plate]) {
     obj.userData.agentGroup = group;
   }
-
+  agentMeshes.push(group);
   return group;
 }
 
 // ============================================================
-// Screen canvas (per-agent terminal-style mockup)
+// HELPERS — screen canvas + name plate
 // ============================================================
 function makeScreenCanvas(agent) {
   const c = document.createElement('canvas');
   c.width = 1024; c.height = 576;
   const ctx = c.getContext('2d');
-  // Background
   ctx.fillStyle = '#0d0a08';
   ctx.fillRect(0, 0, c.width, c.height);
-
-  // Window chrome
   ctx.fillStyle = '#1a1410';
   ctx.fillRect(0, 0, c.width, 40);
-  // Dots
-  ['#ff5f56', '#ffbd2e', '#27c93f'].forEach((col, i) => {
+  ['#ff5f56','#ffbd2e','#27c93f'].forEach((col, i) => {
     ctx.fillStyle = col;
-    ctx.beginPath();
-    ctx.arc(20 + i * 22, 20, 7, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(20 + i*22, 20, 7, 0, Math.PI*2); ctx.fill();
   });
-  // Title
   ctx.fillStyle = '#8a7c6c';
   ctx.font = '20px monospace';
   ctx.fillText(`~/trading/${agent.id}`, 110, 28);
-
-  // Accent line
-  ctx.fillStyle = '#' + agent.color.toString(16).padStart(6, '0');
+  const hex = '#' + agent.color.toString(16).padStart(6, '0');
+  ctx.fillStyle = hex;
   ctx.fillRect(0, 40, c.width, 3);
-
-  // Content
-  ctx.font = '20px monospace';
-  const role = agent.role;
-  ctx.fillStyle = '#' + agent.color.toString(16).padStart(6, '0');
-  ctx.fillText(`# ${role}`, 30, 90);
+  ctx.font = '22px monospace';
+  ctx.fillStyle = hex;
+  ctx.fillText(`# ${agent.role}`, 30, 92);
   ctx.fillStyle = '#ebdcc8';
-  ctx.fillText(`$ status: ${agent.status}`, 30, 130);
+  ctx.fillText(`$ status: ${agent.status}`, 30, 132);
   if (agent.mission) {
     ctx.fillStyle = '#e0a050';
-    ctx.fillText(`▸ mission: ${agent.mission.slice(0, 45)}`, 30, 165);
+    ctx.fillText(`▸ mission: ${(agent.mission || '').slice(0, 42)}`, 30, 168);
   } else {
     ctx.fillStyle = '#6dcc92';
-    ctx.fillText(`▸ idle, awaiting tasks`, 30, 165);
+    ctx.fillText(`▸ idle, awaiting tasks`, 30, 168);
   }
-
-  // Fake terminal lines
   ctx.fillStyle = '#5a4f47';
-  ctx.font = '16px monospace';
-  const lines = generateFakeTerminal(agent);
-  lines.forEach((line, i) => {
-    ctx.fillText(line, 30, 220 + i * 26);
-  });
-
-  // Cursor blink (just visual hint)
-  ctx.fillStyle = '#' + agent.color.toString(16).padStart(6, '0');
-  ctx.fillRect(30, 220 + lines.length * 26 + 4, 12, 18);
-
+  ctx.font = '17px monospace';
+  const lines = fakeTerminal(agent);
+  lines.forEach((line, i) => ctx.fillText(line, 30, 222 + i*26));
+  ctx.fillStyle = hex;
+  ctx.fillRect(30, 222 + lines.length*26 + 4, 12, 18);
   return c;
 }
 
-function generateFakeTerminal(agent) {
-  const base = {
-    'quant-strategist': [
-      '> diagnostic XAUUSD regime...',
-      '  regime: TRENDING_PARABOLIC (conf 0.78)',
-      '  edge propose: scalp pullbacks H1',
-      '  WARN: regime shift risk in <60d',
-      '✓ rapport livre',
-    ],
-    'mql5-developer': [
-      '> compiling Gold_v15.mq5...',
-      '  fix anti-stacking (Symbol+Magic)',
-      '  IndicatorRelease() in OnDeinit',
-      '  brace balance check: OK',
-      '✓ 0 errors, 0 warnings',
-    ],
-    'backtest-auditor': [
-      '> parsing report_2024-2025.xlsx',
-      '  trades: 487 | WR: 58.2%',
-      '  Sharpe: 1.43 | Sortino: 1.91',
-      '  Calmar: 2.1 | PF: 1.62',
-      '  verdict: A REVOIR (OOS missing)',
-    ],
-    'risk-manager': [
-      '> sizing audit...',
-      '  risk/trade: 0.8% (target 1%)',
-      '  Kelly: 0.04, quart-Kelly: 0.01',
-      '  daily cap: -3.5% | mensuel: -12%',
-      '  ✓ exposition coherente',
-    ],
-    'data-scientist': [
-      '> python analyze_segments.py',
-      '  Fisher exact p=0.034 (hr 6-7 UTC)',
-      '  effect size h=0.21 (small)',
-      '  WARN: n=87 too small',
-      '✗ recommend: collect more data',
-    ],
-    'forward-test-watchman': [
-      '> drift report week 23...',
-      '  WR live: 56.3% (bt: 58.2%)',
-      '  slip avg: 0.4 pts (bt: 0.0)',
-      '  spread bias: +18%',
-      '  drift score: 23/100 OK',
-    ],
-    'discipline-coach': [
-      '> check-in journal...',
-      '  rules followed: 96%',
-      '  PnL checks: 1.4/day (target <2)',
-      '  ✓ aucun override tente',
-      '  next: prepare 8 SL streak',
-    ],
-    'broker-execution-specialist': [
-      '> audit IC Markets vs Pepperstone',
-      '  spread XAU: 0.18 vs 0.21 pts',
-      '  commission: $3.5 vs $3.5',
-      '  latency: 12ms vs 18ms (LD4)',
-      '  rec: IC Markets Raw',
-    ],
-  };
-  return base[agent.id] || [];
+function fakeTerminal(agent) {
+  return ({
+    'quant-strategist': ['> diagnostic XAUUSD regime...','  regime: TRENDING_PARABOLIC (0.78)','  edge: scalp pullbacks H1','  WARN: regime shift risk <60d','✓ rapport livre'],
+    'mql5-developer': ['> compiling Gold_v15.mq5...','  fix anti-stacking','  IndicatorRelease() OK','  brace balance: OK','✓ 0 errors, 0 warnings'],
+    'backtest-auditor': ['> parsing report_2024-2025.xlsx','  trades: 487 | WR: 58.2%','  Sharpe: 1.43 | Sortino: 1.91','  Calmar: 2.1 | PF: 1.62','  verdict: A REVOIR'],
+    'risk-manager': ['> sizing audit...','  risk/trade: 0.8% (cap 1%)','  Kelly: 0.04, q-Kelly: 0.01','  daily: -3.5% | mensuel: -12%','  ✓ exposition OK'],
+    'data-scientist': ['> analyze_segments.py','  Fisher p=0.034 (hr 6-7 UTC)','  effect h=0.21 (small)','  WARN: n=87 too small','✗ collect more data'],
+    'forward-test-watchman': ['> drift report week 23...','  WR live: 56.3% (bt 58.2%)','  slip avg: 0.4 pts','  spread bias: +18%','  drift: 23/100 OK'],
+    'discipline-coach': ['> check-in journal...','  rules followed: 96%','  PnL checks: 1.4/day','  ✓ aucun override','  next: prepare 8 SL streak'],
+    'broker-execution-specialist': ['> audit IC vs Pepperstone','  spread XAU: 0.18 vs 0.21','  commission: $3.5 vs $3.5','  latency: 12ms vs 18ms','  rec: IC Markets Raw'],
+  })[agent.id] || [];
 }
 
-// ============================================================
-// Name plate (canvas → texture, always faces camera)
-// ============================================================
 function makeNamePlate(agent) {
   const c = document.createElement('canvas');
   c.width = 384; c.height = 96;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = 'rgba(26, 20, 16, 0.92)';
-  ctx.roundRect = ctx.roundRect || function(x, y, w, h, r) {
-    this.beginPath();
-    this.moveTo(x + r, y);
-    this.lineTo(x + w - r, y);
-    this.quadraticCurveTo(x + w, y, x + w, y + r);
-    this.lineTo(x + w, y + h - r);
-    this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    this.lineTo(x + r, y + h);
-    this.quadraticCurveTo(x, y + h, x, y + h - r);
-    this.lineTo(x, y + r);
-    this.quadraticCurveTo(x, y, x + r, y);
-    this.closePath();
-  };
-  ctx.beginPath();
-  ctx.roundRect(4, 4, 376, 88, 12);
+  ctx.fillStyle = 'rgba(20, 16, 12, 0.94)';
+  roundRect(ctx, 4, 4, 376, 88, 12);
   ctx.fill();
   ctx.strokeStyle = '#' + agent.color.toString(16).padStart(6, '0');
   ctx.lineWidth = 2;
   ctx.stroke();
-
   ctx.fillStyle = '#ebdcc8';
-  ctx.font = 'bold 30px "Helvetica Neue", sans-serif';
+  ctx.font = 'bold 30px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText(agent.name, 192, 44);
-
   ctx.fillStyle = '#' + agent.color.toString(16).padStart(6, '0');
-  ctx.font = '18px "Helvetica Neue", sans-serif';
+  ctx.font = '18px sans-serif';
   ctx.fillText(agent.role, 192, 74);
 
   const tex = new THREE.CanvasTexture(c);
@@ -876,90 +972,267 @@ function makeNamePlate(agent) {
     new THREE.PlaneGeometry(2.0, 0.5),
     new THREE.MeshBasicMaterial({ map: tex, transparent: true })
   );
+  plate.userData.canvas = c;
+  plate.userData.texture = tex;
   return plate;
 }
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y); ctx.closePath();
+}
 
-// Build all agents
-AGENTS.forEach((a, i) => makeAgent(a, DESK_POSITIONS[i]));
-
-// ============================================================
-// Central zone — plant + coffee table (warmth)
-// ============================================================
-const potMat = new THREE.MeshStandardMaterial({ color: 0x6a4a35, roughness: 0.85 });
-const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.35, 0.55), potMat);
-pot.position.set(0, 0.28, 0);
-pot.castShadow = true;
-scene.add(pot);
-
-const leavesMat = new THREE.MeshStandardMaterial({ color: 0x3a5c3a, flatShading: true, roughness: 0.7 });
-for (let i = 0; i < 5; i++) {
-  const leaf = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 0), leavesMat);
-  leaf.position.set(
-    (Math.random() - 0.5) * 0.6,
-    0.9 + Math.random() * 0.5,
-    (Math.random() - 0.5) * 0.6
-  );
-  leaf.castShadow = true;
-  scene.add(leaf);
+function rebuildPlate(group) {
+  const { agent, plate } = group.userData;
+  const c = plate.userData.canvas;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.fillStyle = 'rgba(20, 16, 12, 0.94)';
+  roundRect(ctx, 4, 4, 376, 88, 12); ctx.fill();
+  ctx.strokeStyle = '#' + agent.color.toString(16).padStart(6, '0');
+  ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#ebdcc8';
+  ctx.font = 'bold 30px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(agent.name, 192, 44);
+  ctx.fillStyle = '#' + agent.color.toString(16).padStart(6, '0');
+  ctx.font = '18px sans-serif';
+  ctx.fillText(agent.role, 192, 74);
+  plate.userData.texture.needsUpdate = true;
 }
 
 // ============================================================
-// Raycaster — hover + click
+// DISPOSER les 8 cubicules en cercle (rayon ~13)
+// ============================================================
+const CUBICLE_RING_RADIUS = 13.5;
+AGENTS.forEach((agent, i) => {
+  const angle = (i / 8) * Math.PI * 2 + Math.PI / 8; // décalé pour ne pas être pile dos à la caméra
+  const x = Math.cos(angle) * CUBICLE_RING_RADIUS;
+  const z = Math.sin(angle) * CUBICLE_RING_RADIUS;
+
+  const cubicleGroup = new THREE.Group();
+  cubicleGroup.position.set(x, 0, z);
+  // Faire pointer la vitrine vers le centre (l'ouverture du cubicule = vers le centre)
+  // Convention : cubicule "ouvert" sur +z dans repère local → on tourne pour pointer vers (0,0,0)
+  const facing = Math.atan2(-z, -x); // direction vers le centre
+  cubicleGroup.rotation.y = facing - Math.PI / 2;
+
+  const shell = makeCubicleShell(agent);
+  cubicleGroup.add(shell);
+
+  const setup = makeAgentSetup(agent);
+  cubicleGroup.add(setup);
+
+  scene.add(cubicleGroup);
+});
+
+// ============================================================
+// BUREAU DU CHEF — au centre, surélevé
+// ============================================================
+function buildChefDesk() {
+  const g = new THREE.Group();
+
+  // Podium léger
+  const podiumMat = new THREE.MeshStandardMaterial({ color: 0x4a2f20, roughness: 0.7 });
+  const podium = new THREE.Mesh(
+    new THREE.CylinderGeometry(3.2, 3.4, 0.18, 48),
+    podiumMat
+  );
+  podium.position.y = 0.09;
+  podium.receiveShadow = true;
+  podium.castShadow = true;
+  g.add(podium);
+
+  // Liseré du podium
+  const podiumRing = new THREE.Mesh(
+    new THREE.TorusGeometry(3.25, 0.04, 8, 64),
+    new THREE.MeshStandardMaterial({ color: 0xD77757, emissive: 0xD77757, emissiveIntensity: 0.3 })
+  );
+  podiumRing.rotation.x = Math.PI / 2;
+  podiumRing.position.y = 0.18;
+  g.add(podiumRing);
+
+  // Bureau imposant (en arc de cercle face caméra par défaut)
+  const deskMat = new THREE.MeshStandardMaterial({ color: 0x3a2418, roughness: 0.4, metalness: 0.15 });
+  // Plateau principal
+  const deskTop = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.0, 2.0, 0.12, 48, 1, false, -Math.PI/2, Math.PI),
+    deskMat
+  );
+  deskTop.position.y = 1.05;
+  deskTop.castShadow = true;
+  g.add(deskTop);
+
+  // Panneau frontal (face vers la caméra par défaut)
+  const deskFront = new THREE.Mesh(
+    new THREE.BoxGeometry(3.8, 0.95, 0.12),
+    deskMat
+  );
+  deskFront.position.set(0, 0.6, 0);
+  deskFront.castShadow = true;
+  g.add(deskFront);
+
+  // Liseré or sur le panneau frontal
+  const deskBadge = new THREE.Mesh(
+    new THREE.PlaneGeometry(3, 0.4),
+    new THREE.MeshStandardMaterial({ color: 0xD77757, emissive: 0xD77757, emissiveIntensity: 0.2, roughness: 0.5 })
+  );
+  deskBadge.position.set(0, 0.6, 0.07);
+  g.add(deskBadge);
+  // Texte sur le badge
+  const badgeCanvas = document.createElement('canvas');
+  badgeCanvas.width = 1024; badgeCanvas.height = 128;
+  const bctx = badgeCanvas.getContext('2d');
+  bctx.clearRect(0, 0, 1024, 128);
+  bctx.fillStyle = '#14100c';
+  bctx.font = 'bold 64px sans-serif';
+  bctx.textAlign = 'center';
+  bctx.fillText('DIRECTION', 512, 80);
+  const badgeTex = new THREE.CanvasTexture(badgeCanvas);
+  const badgeText = new THREE.Mesh(
+    new THREE.PlaneGeometry(3, 0.4),
+    new THREE.MeshBasicMaterial({ map: badgeTex, transparent: true })
+  );
+  badgeText.position.set(0, 0.6, 0.075);
+  g.add(badgeText);
+
+  // Fauteuil "chef" — grand dossier
+  const chairMat = new THREE.MeshStandardMaterial({ color: 0x1a1410, roughness: 0.45, metalness: 0.1 });
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.18, 1.0), chairMat);
+  seat.position.set(0, 0.7, -1.6);
+  seat.castShadow = true;
+  g.add(seat);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.6, 0.18), chairMat);
+  back.position.set(0, 1.6, -2.05);
+  back.castShadow = true;
+  g.add(back);
+  // Capitonnage orange en haut du dossier
+  const backTop = new THREE.Mesh(
+    new THREE.BoxGeometry(1.0, 0.15, 0.2),
+    new THREE.MeshStandardMaterial({ color: 0xD77757, roughness: 0.5 })
+  );
+  backTop.position.set(0, 2.35, -2.05);
+  g.add(backTop);
+  // Pied
+  const post = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.06, 0.06, 0.5),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+  );
+  post.position.set(0, 0.4, -1.6);
+  g.add(post);
+  const base = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.5, 0.5, 0.07),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+  );
+  base.position.set(0, 0.18, -1.6);
+  g.add(base);
+
+  // Hologramme flottant au-dessus (logo orange tournant)
+  const holoMat = new THREE.MeshBasicMaterial({
+    color: 0xD77757, transparent: true, opacity: 0.6,
+    side: THREE.DoubleSide,
+  });
+  const holo = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.6, 32), holoMat);
+  holo.position.set(0, 2.8, 0);
+  g.add(holo);
+
+  const holo2 = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.38, 32), holoMat);
+  holo2.position.set(0, 2.8, 0);
+  g.add(holo2);
+
+  // Aura lumineuse
+  const aura = new THREE.PointLight(0xD77757, 0.8, 5, 1.5);
+  aura.position.set(0, 2.6, 0);
+  g.add(aura);
+
+  // -- Surface cliquable (capture tout le bureau)
+  const hitbox = new THREE.Mesh(
+    new THREE.BoxGeometry(4.5, 3.0, 4.5),
+    new THREE.MeshBasicMaterial({ visible: false })
+  );
+  hitbox.position.set(0, 1.5, -0.8);
+  g.add(hitbox);
+
+  g.userData = { isChef: true, holo, holo2 };
+  hitbox.userData.chefGroup = g;
+  interactables.push(hitbox);
+
+  return g;
+}
+
+const chefDesk = buildChefDesk();
+scene.add(chefDesk);
+
+// ============================================================
+// RAYCASTER — hover + click
 // ============================================================
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 const tooltip = document.getElementById('tooltip');
 
-function getHitAgentGroup(event) {
+function getHit(event) {
   const rect = canvas.getBoundingClientRect();
   pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
   raycaster.setFromCamera(pointer, camera);
   const hits = raycaster.intersectObjects(interactables, false);
   if (hits.length > 0) {
-    return hits[0].object.userData.agentGroup || null;
+    const obj = hits[0].object;
+    if (obj.userData.chefGroup) return { type: 'chef' };
+    if (obj.userData.agentGroup) return { type: 'agent', group: obj.userData.agentGroup };
   }
   return null;
 }
 
 canvas.addEventListener('mousemove', (e) => {
-  const hit = getHitAgentGroup(e);
+  const hit = getHit(e);
   if (hit) {
     canvas.style.cursor = 'pointer';
-    const a = hit.userData.agent;
-    tooltip.querySelector('.t-name').textContent = a.name;
-    tooltip.querySelector('.t-role').textContent = a.role;
+    if (hit.type === 'agent') {
+      tooltip.querySelector('.t-name').textContent = hit.group.userData.agent.name;
+      tooltip.querySelector('.t-role').textContent = hit.group.userData.agent.role;
+    } else {
+      tooltip.querySelector('.t-name').textContent = 'Bureau du chef';
+      tooltip.querySelector('.t-role').textContent = 'Direction — vue d\'ensemble';
+    }
     tooltip.style.left = (e.clientX + 14) + 'px';
     tooltip.style.top = (e.clientY - 8) + 'px';
     tooltip.classList.add('show');
   } else {
-    canvas.style.cursor = 'default';
+    canvas.style.cursor = '';
     tooltip.classList.remove('show');
   }
 });
 
-let down = { x: 0, y: 0 };
-canvas.addEventListener('pointerdown', (e) => { down.x = e.clientX; down.y = e.clientY; });
+let downPos = { x: 0, y: 0 };
+canvas.addEventListener('pointerdown', (e) => { downPos.x = e.clientX; downPos.y = e.clientY; });
 canvas.addEventListener('pointerup', (e) => {
-  if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > 4) return; // it was a drag
-  const hit = getHitAgentGroup(e);
-  if (hit) openPanel(hit.userData.agent);
+  if (Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y) > 4) return;
+  const hit = getHit(e);
+  if (!hit) return;
+  if (hit.type === 'agent') openAgentPanel(hit.group);
+  else openChefPanel();
 });
 
 // ============================================================
-// Side panel
+// PANEL — Agent
 // ============================================================
 const panel = document.getElementById('panel');
 const panelHead = document.getElementById('panel-head-content');
 const panelBody = document.getElementById('panel-body');
 document.getElementById('close-panel').onclick = () => panel.classList.remove('open');
 
-function openPanel(agent) {
+function openAgentPanel(group) {
+  const agent = group.userData.agent;
   const s = STATUS_LABEL[agent.status];
   const hex = '#' + agent.color.toString(16).padStart(6, '0');
+
   panelHead.innerHTML = `
     <div class="avatar" style="background:${hex}">${agent.initials}</div>
-    <h2>${agent.name}</h2>
+    <h2 id="agent-name" contenteditable="true" spellcheck="false">${escapeHtml(agent.name)}</h2>
+    <div class="edit-hint">✏️ clic sur le nom pour modifier</div>
     <div class="role">${agent.role}</div>
   `;
   panelBody.innerHTML = `
@@ -973,55 +1246,201 @@ function openPanel(agent) {
     ${agent.mission ? `
     <div class="section">
       <div class="section-title">Mission en cours</div>
-      <div class="mission">${agent.mission}</div>
+      <div class="mission">${escapeHtml(agent.mission)}</div>
     </div>` : ''}
     <div class="section">
       <div class="section-title">Devise</div>
-      <div class="section-body" style="font-style:italic;color:${hex}">${agent.motto}</div>
+      <div class="section-body" style="font-style:italic;color:${hex}">${escapeHtml(agent.motto)}</div>
     </div>
     <div class="section">
       <div class="section-title">Parcours</div>
-      <div class="section-body">${agent.background}</div>
+      <div class="section-body">${escapeHtml(agent.background)}</div>
     </div>
     <div class="section">
       <div class="section-title">Mandat</div>
-      <div class="section-body">${agent.mandate}</div>
+      <div class="section-body">${escapeHtml(agent.mandate)}</div>
     </div>
     <div class="section">
       <div class="section-title">Invocation</div>
       <div class="code-chip">@${agent.id}</div>
-      <button class="invoke-btn" onclick="navigator.clipboard.writeText('@${agent.id}').then(()=>this.textContent='✓ Copié')">Copier le handle</button>
+      <button class="btn" id="copy-handle">Copier le handle</button>
     </div>
   `;
   panel.classList.add('open');
+
+  // Edition du nom
+  const nameEl = document.getElementById('agent-name');
+  nameEl.addEventListener('blur', () => {
+    const newName = nameEl.textContent.trim() || agent.name;
+    if (newName !== agent.name) {
+      agent.name = newName;
+      const ov = loadOverrides(); ov[agent.id] = { name: newName }; saveOverrides(ov);
+      rebuildPlate(group);
+      toast(`Nom mis à jour : ${newName}`);
+    }
+  });
+  nameEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); }
+  });
+
+  document.getElementById('copy-handle').onclick = function() {
+    navigator.clipboard.writeText('@' + agent.id);
+    this.textContent = '✓ Copié';
+    setTimeout(() => this.textContent = 'Copier le handle', 1500);
+  };
+}
+
+// ============================================================
+// PANEL — Chef (Direction)
+// ============================================================
+function openChefPanel() {
+  const busy = AGENTS.filter(a => a.status === 'busy').length;
+  const avail = AGENTS.filter(a => a.status === 'available').length;
+  const off = AGENTS.filter(a => a.status === 'off').length;
+
+  panelHead.innerHTML = `
+    <div class="avatar" style="background:linear-gradient(135deg,#D77757,#f0916b)">★</div>
+    <h2>Direction</h2>
+    <div class="role">Bureau du chef</div>
+  `;
+  panelBody.innerHTML = `
+    <div class="section">
+      <div class="section-title">Vue d'ensemble</div>
+      <div class="section-body">
+        <strong>${AGENTS.length}</strong> agents · ${busy} en mission · ${avail} disponibles · ${off} off-duty
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Équipe — clic sur un nom pour le modifier</div>
+      <div class="team-grid" id="team-grid"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Actions</div>
+      <button class="btn" id="reset-all">Tout passer en disponible</button>
+      <button class="btn ghost" id="reset-names" style="margin-top:8px">Réinitialiser tous les noms</button>
+    </div>
+  `;
+  panel.classList.add('open');
+
+  const grid = document.getElementById('team-grid');
+  AGENTS.forEach(agent => {
+    const mesh = agentMeshes.find(m => m.userData.agent.id === agent.id);
+    const hex = '#' + agent.color.toString(16).padStart(6, '0');
+    const s = STATUS_LABEL[agent.status];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="name" contenteditable="true" spellcheck="false" data-id="${agent.id}">${escapeHtml(agent.name)}</div>
+      <div class="role-mini" style="color:${hex}">${agent.role}</div>
+      <div class="stat-row"><span class="dot" style="background:${s.hex};box-shadow:0 0 6px ${s.hex}"></span> ${s.label}</div>
+    `;
+    grid.appendChild(card);
+    const nameEl = card.querySelector('.name');
+    nameEl.addEventListener('blur', () => {
+      const newName = nameEl.textContent.trim() || agent.name;
+      if (newName !== agent.name) {
+        agent.name = newName;
+        const ov = loadOverrides(); ov[agent.id] = { name: newName }; saveOverrides(ov);
+        rebuildPlate(mesh);
+        toast(`Nom mis à jour : ${newName}`);
+      }
+    });
+    nameEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); }
+    });
+  });
+
+  document.getElementById('reset-all').onclick = () => {
+    AGENTS.forEach(a => setAgentStatusInternal(a.id, 'available', null));
+    toast('Tous les agents sont disponibles');
+    openChefPanel();
+  };
+  document.getElementById('reset-names').onclick = () => {
+    saveOverrides({});
+    AGENTS.forEach((a, i) => {
+      a.name = DEFAULT_AGENTS[i].name;
+      const m = agentMeshes.find(x => x.userData.agent.id === a.id);
+      if (m) rebuildPlate(m);
+    });
+    toast('Noms réinitialisés');
+    openChefPanel();
+  };
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
 
 // ============================================================
 // Stats counter
 // ============================================================
 function refreshStats() {
-  const busy = AGENTS.filter(a => a.status === 'busy').length;
-  const avail = AGENTS.filter(a => a.status === 'available').length;
-  document.getElementById('busy-count').textContent = busy;
-  document.getElementById('avail-count').textContent = avail;
+  document.getElementById('busy-count').textContent = AGENTS.filter(a => a.status === 'busy').length;
+  document.getElementById('avail-count').textContent = AGENTS.filter(a => a.status === 'available').length;
 }
 refreshStats();
 
+// Toast
+const toastEl = document.getElementById('toast');
+let toastTimer;
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+}
+
 // ============================================================
-// Animation loop
+// API publique (console)
+// ============================================================
+function setAgentStatusInternal(id, status, mission = null) {
+  const mesh = agentMeshes.find(m => m.userData.agent.id === id);
+  if (!mesh) return;
+  const agent = mesh.userData.agent;
+  agent.status = status;
+  agent.mission = mission;
+  mesh.userData.led.material.color.setHex(STATUS_COLORS[status]);
+  mesh.userData.ledLight.color.setHex(STATUS_COLORS[status]);
+  mesh.userData.avatarGroup.visible = status !== 'off';
+  // Refresh screen content
+  const newScreenCanvas = makeScreenCanvas(agent);
+  mesh.userData.screen.material.map.image = newScreenCanvas;
+  mesh.userData.screen.material.map.needsUpdate = true;
+  refreshStats();
+}
+window.setAgentStatus = (id, status, mission) => {
+  setAgentStatusInternal(id, status, mission);
+  console.log(`✓ ${id} → ${status}${mission ? ` (${mission})` : ''}`);
+};
+window.setAgentName = (id, name) => {
+  const agent = AGENTS.find(a => a.id === id);
+  if (!agent) return console.warn('not found:', id);
+  agent.name = name;
+  const ov = loadOverrides(); ov[id] = { name }; saveOverrides(ov);
+  const m = agentMeshes.find(x => x.userData.agent.id === id);
+  if (m) rebuildPlate(m);
+  console.log(`✓ ${id} renommé en ${name}`);
+};
+window.listAgents = () => AGENTS.map(a => ({ id: a.id, name: a.name, status: a.status, mission: a.mission }));
+
+console.log('%c🏢 Trading Algo Office (v2)', 'color:#D77757;font-weight:bold;font-size:14px');
+console.log('• setAgentStatus(id, status, mission)');
+console.log('• setAgentName(id, name)');
+console.log('• listAgents()');
+
+// ============================================================
+// ANIMATION
 // ============================================================
 const clock = new THREE.Clock();
 function animate() {
   const t = clock.getElapsedTime();
 
-  agentMeshes.forEach((mesh) => {
+  agentMeshes.forEach(mesh => {
     const { led, ledLight, agent, plate, avatarGroup } = mesh.userData;
-
-    // LED pulse for busy/alert agents
     if (agent.status === 'busy') {
       const p = 0.85 + 0.18 * Math.sin(t * 2.5 + mesh.position.x * 0.5);
       led.scale.setScalar(p);
-      ledLight.intensity = 0.6 * p;
+      ledLight.intensity = 0.55 * p;
     } else if (agent.status === 'alert') {
       const p = 0.7 + 0.3 * Math.sin(t * 6);
       led.scale.setScalar(p);
@@ -1029,60 +1448,37 @@ function animate() {
     } else {
       led.scale.setScalar(1);
     }
-
-    // Subtle avatar "breathing"
     if (avatarGroup && avatarGroup.visible) {
-      const breath = 1 + Math.sin(t * 1.5 + mesh.position.x) * 0.008;
-      avatarGroup.scale.y = breath;
+      avatarGroup.scale.y = 1 + Math.sin(t * 1.5 + mesh.position.x) * 0.008;
     }
-
-    // Plate billboards to camera
     plate.lookAt(camera.position);
   });
 
-  // Subtle pendant flicker
-  pendants.forEach((p, i) => {
-    p.intensity = 0.65 + 0.05 * Math.sin(t * 0.5 + i);
+  // Hologramme chef qui tourne lentement
+  if (chefDesk.userData.holo) {
+    chefDesk.userData.holo.rotation.z = t * 0.4;
+    chefDesk.userData.holo2.rotation.z = -t * 0.6;
+  }
+
+  pendantList.forEach((p, i) => {
+    p.intensity = (p.userData.base || p.intensity) + 0; // no-op for safety; gentle flicker handled below
   });
 
   controls.update();
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
-
 animate();
+
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(innerWidth, innerHeight);
 });
 
-// Hide loader once first frame rendered
 requestAnimationFrame(() => {
-  setTimeout(() => document.getElementById('loader').classList.add('hidden'), 200);
+  setTimeout(() => document.getElementById('loader').classList.add('hidden'), 250);
 });
-
-// ============================================================
-// PUBLIC API — update status from outside (console)
-//   window.setAgentStatus('mql5-developer', 'busy', 'fix bug X')
-//   window.setAgentStatus('quant-strategist', 'available')
-// ============================================================
-window.setAgentStatus = function(id, status, mission = null) {
-  const mesh = agentMeshes.find(m => m.userData.agent.id === id);
-  if (!mesh) { console.warn('Agent not found:', id); return; }
-  const agent = mesh.userData.agent;
-  agent.status = status;
-  agent.mission = mission;
-  mesh.userData.led.material.color.setHex(STATUS_COLORS[status]);
-  mesh.userData.ledLight.color.setHex(STATUS_COLORS[status]);
-  mesh.userData.avatarGroup.visible = status !== 'off';
-  refreshStats();
-  console.log(`✓ ${agent.name}: ${status}${mission ? ` (${mission})` : ''}`);
-};
-window.listAgents = () => AGENTS.map(a => ({ id: a.id, name: a.name, status: a.status, mission: a.mission }));
-console.log('%c🏢 Trading Algo Office', 'color:#D77757;font-weight:bold;font-size:14px');
-console.log('Update status: window.setAgentStatus(id, status, mission)');
-console.log('List agents:   window.listAgents()');
 </script>
 </body>
 </html>

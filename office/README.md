@@ -1,89 +1,127 @@
 # Bureau virtuel 3D — Trading Algo Team
 
-Interface 3D interactive pour visualiser les 8 agents de l'équipe trading algo comme des employés dans un open-space.
+Open-space circulaire avec 8 vitrines (une par agent) + bureau du chef central.
 
-## Ouvrir
+---
 
+## 🚀 Comment l'ouvrir (le plus simple)
+
+### Sur Mac
+1. Va dans le dossier `office/`
+2. **Double-clic sur `lancer-mac.command`**
+3. Une fenêtre Terminal s'ouvre + le navigateur s'ouvre automatiquement sur le bureau virtuel
+4. Quand tu as fini, **ferme le Terminal** (Ctrl+C ou ⌘+W)
+
+> ⚠️ Premier double-clic : macOS peut bloquer le fichier. Clic-droit dessus → "Ouvrir" → confirme. Une seule fois.
+
+### Sur Windows
+1. Va dans le dossier `office/`
+2. **Double-clic sur `lancer-windows.bat`**
+3. Une fenêtre CMD s'ouvre + le navigateur s'ouvre automatiquement
+4. Quand tu as fini, **ferme la fenêtre CMD** (Ctrl+C ou la croix)
+
+> ⚠️ Si rien ne se passe, c'est que Python n'est pas installé. Va sur https://www.python.org/downloads/ et coche "Add Python to PATH" pendant l'install. Puis re-double-clic.
+
+### Sur Linux
 ```bash
-# Option 1 — Python (le plus simple)
 cd office
-python3 -m http.server 8000
-# puis ouvrir http://localhost:8000
-
-# Option 2 — Bun
-bunx serve office
-
-# Option 3 — direct (peut ne pas marcher selon le navigateur, ESM via file:// est restrictif)
-open office/index.html
+./lancer-linux.sh
 ```
 
-> Three.js est chargé depuis unpkg.com via import map. Connexion internet requise au premier chargement (cache navigateur après).
+---
 
-## Ce que tu vois
-
-- **Open-space** avec sol/murs, éclairage chaud (suspensions LED ambrées)
-- **8 postes de travail** : 2 rangées de 4, chaque agent à son bureau
-- Chaque poste a : bureau bois, chaise, moniteur (avec mockup terminal personnalisé), clavier, mug
-- **Avatar humanoid** stylisé (couleur de chemise = couleur de l'agent)
-- **LED de statut** flottante au-dessus de chaque agent :
-  - 🟢 Vert (fixe) = disponible
-  - 🟠 Orange (pulse lente) = en mission
-  - 🔴 Rouge (pulse rapide) = alerte
-  - ⚫ Gris (avatar absent) = off-duty
-- **Plaque nominative** flottante en permanence orientée vers la caméra
-- **Plante centrale** + tapis (zone détente)
-- **Enseigne murale** "TRADING ALGO"
-
-## Interactions
+## 🎮 Comment l'utiliser
 
 | Action | Effet |
 |---|---|
-| Glisser souris | Orbiter autour de la scène |
-| Molette | Zoom avant/arrière |
-| Hover sur un agent | Tooltip nom + rôle |
-| Clic sur un agent | Panneau latéral avec fiche détaillée |
-| Bouton "Copier le handle" | Copie `@agent-id` dans le presse-papier |
+| **Molette souris** | Tourne la pièce sur 360° |
+| **Glisser souris** | Orbite libre (haut/bas + côtés) |
+| **Shift + molette** | Zoom avant / arrière |
+| **Hover** sur un agent ou bureau | Tooltip |
+| **Clic** sur un agent | Fiche détaillée + édition du nom |
+| **Clic** sur le bureau central | Panneau Direction (gestion d'équipe) |
 
-## Mettre à jour les statuts en temps réel
+---
 
-Depuis la console JS du navigateur (F12) :
+## ✏️ Modifier le nom d'un agent
+
+**Méthode 1 (via la fiche agent)** :
+1. Clic sur l'agent dans la scène
+2. Clic sur son nom dans le panneau qui s'ouvre
+3. Tape le nouveau nom → Entrée
+4. La plaque 3D se met à jour en direct
+
+**Méthode 2 (via la Direction)** :
+1. Clic sur le bureau du chef (au centre)
+2. Tu vois la grille de toute l'équipe
+3. Clic sur n'importe quel nom pour le modifier
+4. Entrée pour valider
+
+Les nouveaux noms sont **sauvegardés automatiquement** dans le navigateur (localStorage). Au prochain chargement, ils sont conservés.
+
+Pour **réinitialiser tous les noms** : Direction → "Réinitialiser tous les noms".
+
+---
+
+## 🏢 Ce que tu vois
+
+- **Pièce circulaire** avec sol parquet warm et murs cylindriques
+- **6 "fenêtres"** lumineuses ambrées autour de la pièce (= ambiance soir/coucher de soleil)
+- **8 cubicules en vitrine** disposés en cercle, parois en verre semi-transparent, encadrement orange
+- À l'intérieur de chaque vitrine : bureau, chaise pivot, moniteur (mockup terminal du métier de l'agent), clavier, mug, plante perso
+- **Avatar** de l'agent assis à son poste (chemise = couleur de l'agent)
+- **LED de statut** flottante (verte/orange/rouge/grise selon l'état)
+- **Plaque nominative** orientée toujours vers la caméra
+- **Bureau du chef au centre** : podium surélevé, fauteuil haut dossier capitonné, plaque "DIRECTION", hologramme tournant
+- **Tapis circulaire** sous le bureau du chef avec liseré orange
+- **Enseigne murale** "TRADING ALGO" au fond
+
+---
+
+## ⌨️ Pilotage par console (avancé)
+
+Ouvre la console JS (F12) et tape :
 
 ```javascript
 // Mettre un agent en mission
-setAgentStatus('mql5-developer', 'busy', 'Refactor anti-stacking EA v1.6')
+setAgentStatus('mql5-developer', 'busy', 'Fix anti-stacking v1.6')
 
-// Marquer comme disponible
+// Marquer disponible
 setAgentStatus('quant-strategist', 'available')
 
-// Déclencher une alerte
+// Déclencher une alerte (LED rouge clignotante)
 setAgentStatus('forward-test-watchman', 'alert', 'Drift critique XAU')
 
-// Marquer off-duty
+// Mettre off-duty (l'avatar disparaît du bureau)
 setAgentStatus('discipline-coach', 'off')
+
+// Renommer
+setAgentName('quant-strategist', 'Marie Dupont')
 
 // Lister tous les agents
 listAgents()
 ```
 
-Statuts valides : `available`, `busy`, `alert`, `off`.
+Statuts valides : `'available'`, `'busy'`, `'alert'`, `'off'`.
 
-## Architecture
+---
 
-Fichier unique `index.html` autonome :
-- HTML/CSS pour l'interface (header, légende, panneau latéral, tooltip)
-- Three.js (via CDN import map) pour la scène 3D
-- Données des 8 agents synchronisées avec `.claude/agents/*.md`
-- API console pour modifier les états en live
+## ❓ Ça marche pas, que faire ?
 
-## Limitations actuelles
+- **Le navigateur s'ouvre mais c'est tout blanc** → attends 2-3 secondes, Three.js se charge depuis le CDN (besoin d'internet la 1ère fois)
+- **"Address already in use"** → le port 8765 est pris. Modifie le launcher pour utiliser 8766 ou autre
+- **Page blanche persiste** → ouvre la console JS (F12) pour voir l'erreur, ou essaie un autre navigateur (Chrome / Firefox récents recommandés)
+- **Aucun launcher ne marche** → installe Python 3 : Mac `brew install python`, Linux `sudo apt install python3`, Windows depuis python.org
 
-- Les statuts sont en mémoire (session). À chaque reload, retour aux statuts par défaut.
-- Pas encore de bridge automatique avec les invocations Claude réelles (les statuts sont mis à jour manuellement).
+---
 
-## Évolutions possibles
+## 📂 Fichiers
 
-- 🔄 Bridge avec un fichier `agents-status.json` lu en polling (statut persisté)
-- 🪝 Hook Claude qui met à jour le statut à chaque invocation d'un agent
-- 💬 Affichage en bulle du dernier rapport produit par l'agent
-- 🏃 Animation : agent qui se lève et marche vers un autre quand collaboration inter-agents
-- 📊 Tableau au mur affichant le PnL ou les métriques du jour
+```
+office/
+├── index.html              ← l'app (HTML + Three.js inline)
+├── lancer-mac.command      ← double-clic Mac
+├── lancer-windows.bat      ← double-clic Windows  
+├── lancer-linux.sh         ← Linux
+└── README.md               ← ce fichier
+```
