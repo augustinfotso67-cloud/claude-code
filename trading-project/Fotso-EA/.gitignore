@@ -1,0 +1,19 @@
+# Claude Code internal
+.claude/
+
+# Compile logs (MetaEditor build artifacts)
+compile_*.txt
+compile_*.log
+*.log
+
+# Duplicate / staging files at repo root
+brain_v1.onnx
+
+# Screenshots
+*.png
+*.jpg
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo

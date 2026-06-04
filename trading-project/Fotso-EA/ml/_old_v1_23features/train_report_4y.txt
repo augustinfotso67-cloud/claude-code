@@ -1,0 +1,53 @@
+﻿Total trades: 549
+Date range: 2022-05-10 16:31:00 → 2025-12-29 03:15:00
+Overall WR: 43.2%
+Sum profit: 1691.77
+
+=== SPLIT ===
+Train: 439 (2022-05-10 → 2025-03-27)
+Test : 110  (2025-03-31 → 2025-12-29)
+Train WR: 41.0% / Test WR: 51.8%
+
+=== METRICS (test set) ===
+Model              AUC   Brier  LogLoss
+----------------------------------------
+LogReg           0.557   0.323    0.926
+RandomForest     0.568   0.247    0.688
+GradBoost        0.534   0.260    0.714
+(baseline ŷ=μ)   0.500   0.261    0.716
+
+=== SIMULATION ML-FILTER (test set) ===
+Model           Threshold  Kept  Skip     WR    NetPnL    vs raw
+----------------------------------------------------------------------
+RAW (no filter)              110     0  51.8%  1126.91          
+LogReg               0.45   110     0  51.8%  1126.91    +0.00
+LogReg               0.50   106     4  51.9%  1119.35    -7.56
+LogReg               0.55   102     8  52.0%  1097.14   -29.77
+LogReg               0.60    98    12  53.1%  1111.20   -15.71
+LogReg               0.65    91    19  53.8%  1054.35   -72.56
+RandomForest         0.45    78    32  53.8%   678.38  -448.53
+RandomForest         0.50    33    77  66.7%   616.07  -510.84
+RandomForest         0.55     4   106  75.0%    20.18 -1106.73
+RandomForest         0.60     1   109 100.0%     8.49 -1118.42
+GradBoost            0.45    78    32  53.8%  1000.05  -126.86
+GradBoost            0.50    63    47  50.8%   809.61  -317.30
+GradBoost            0.55    52    58  53.8%   818.95  -307.96
+GradBoost            0.60    42    68  52.4%   710.70  -416.21
+GradBoost            0.65    30    80  56.7%   537.74  -589.17
+
+=== TOP 15 FEATURES (RandomForest) ===
+   0.079  num__psy_epuise_ach
+   0.074  num__psy_epuise_vend
+   0.069  num__psy_cupidite
+   0.067  num__psy_peur
+   0.055  num__entry
+   0.054  num__atr_h4
+   0.052  num__rr_target
+   0.052  num__adx_h4
+   0.049  num__sl_dist_pct
+   0.047  num__tp_dist_pct
+   0.047  num__ema200_d1_pct
+   0.046  num__context_score
+   0.045  num__atr_h1
+   0.041  num__risk_mul
+   0.028  num__hour

@@ -1,0 +1,36 @@
+{
+  "feature_order": [
+    "hour",
+    "dow",
+    "month",
+    "rr_target",
+    "sl_dist_pct",
+    "tp_dist_pct",
+    "atr_h1",
+    "atr_h4",
+    "adx_h4",
+    "ema200_d1_pct",
+    "spread_pts",
+    "score_buy",
+    "score_sell",
+    "context_score",
+    "risk_mul",
+    "psy_peur",
+    "psy_cupidite",
+    "psy_epuise_vend",
+    "psy_epuise_ach",
+    "adn_force_explo",
+    "mi_cible_inst",
+    "dg_buy_susp",
+    "dg_sell_ovr"
+  ],
+  "n_trades": 549,
+  "n_features": 23,
+  "hold_out_auc": 0.5574313141343926,
+  "hold_out_brier": 0.2462338422309189,
+  "date_range": [
+    "2022-05-10 16:31:00",
+    "2025-12-29 03:15:00"
+  ],
+  "model": "RandomForestClassifier(n_est=300,max_depth=5,min_samp_leaf=5)"
+}

@@ -1,0 +1,19 @@
+﻿SCRIPT START
+argv: ['C:\\Users\\User\\Fotso-EA\\tools\\xlsx_dump2.py', 'C:\\Users\\User\\Desktop\\Nouveau dossier (3)\\xa\\ReportTester-435205660.xlsx']
+path='C:\\Users\\User\\Desktop\\Nouveau dossier (3)\\xa\\ReportTester-435205660.xlsx'
+exists=False
+python : Traceback (most recent call last):
+Au caractère Ligne:1 : 82
++ ... 5660.xlsx"; python -X utf8 "C:\Users\User\Fotso-EA\tools\xlsx_dump2.p ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\User\Fotso-EA\tools\xlsx_dump2.py", line 17, in <module>
+    z = zipfile.ZipFile(path)
+        ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Local\Programs\Python\Python312\Lib\zipfile\__init__.py", line 1331, in __init__
+    self.fp = io.open(file, filemode)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User\\Desktop\\Nouveau dossier 
+(3)\\xa\\ReportTester-435205660.xlsx'
