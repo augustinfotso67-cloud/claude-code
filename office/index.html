@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Trading Algo Office — Bureau virtuel</title>
+<style>
+  :root {
+    --orange: #D77757;
+    --blue: #5769F7;
+    --bg: #1a1410;
+    --bg-2: #221913;
+    --surface: #2a1f1a;
+    --surface-2: #352720;
+    --text: #ebdcc8;
+    --text-muted: #8a7c6c;
+    --border: rgba(215, 119, 87, 0.25);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  #canvas { display: block; }
+
+  /* Header */
+  .header {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 18px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    pointer-events: none;
+    z-index: 10;
+    background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
+  }
+  .header .brand { display: flex; flex-direction: column; }
+  .header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.3px; }
+  .header h1 .accent { color: var(--orange); }
+  .header .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .header .stats {
+    font-size: 12px; color: var(--text-muted);
+    background: rgba(42, 31, 26, 0.6);
+    backdrop-filter: blur(8px);
+    padding: 8px 14px; border-radius: 20px;
+    border: 1px solid var(--border);
+    pointer-events: auto;
+  }
+  .header .stats b { color: var(--orange); font-weight: 600; }
+
+  /* Legend */
+  .legend {
+    position: absolute;
+    bottom: 24px; left: 24px;
+    background: rgba(42, 31, 26, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 11px;
+    z-index: 10;
+    min-width: 160px;
+  }
+  .legend .title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); margin-bottom: 8px; }
+  .legend .item { display: flex; align-items: center; gap: 10px; margin: 5px 0; }
+  .legend .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.green { background: #6dcc92; box-shadow: 0 0 8px #6dcc92; }
+  .dot.orange { background: #e0a050; box-shadow: 0 0 8px #e0a050; }
+  .dot.red { background: #d96565; box-shadow: 0 0 8px #d96565; }
+  .dot.grey { background: #5a4f47; }
+
+  /* Side panel */
+  .panel {
+    position: absolute;
+    top: 70px; right: 24px;
+    width: 380px;
+    max-height: calc(100vh - 100px);
+    background: rgba(42, 31, 26, 0.96);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 0;
+    overflow: hidden;
+    transform: translateX(120%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 20;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column;
+  }
+  .panel.open { transform: translateX(0); }
+  .panel .panel-head {
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid rgba(215, 119, 87, 0.15);
+    position: relative;
+  }
+  .panel .close {
+    position: absolute; top: 16px; right: 18px;
+    background: none; border: none; color: var(--text-muted);
+    font-size: 24px; cursor: pointer; line-height: 1;
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .panel .close:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .panel .panel-body {
+    padding: 18px 24px 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .panel .avatar {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 600;
+    color: white;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+  .panel h2 { font-size: 19px; font-weight: 600; margin-bottom: 3px; letter-spacing: -0.2px; }
+  .panel .role { color: var(--orange); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500; }
+  .panel .section { margin: 16px 0; }
+  .panel .section-title { font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.5px; margin-bottom: 8px; font-weight: 500; }
+  .panel .section-body { font-size: 13px; line-height: 1.6; color: var(--text); }
+  .panel .status-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.04);
+    padding: 6px 12px; border-radius: 20px;
+    font-size: 12px;
+  }
+  .panel .mission {
+    background: rgba(215, 119, 87, 0.08);
+    border-left: 3px solid var(--orange);
+    padding: 12px 14px; border-radius: 6px;
+    font-size: 12px; line-height: 1.5;
+  }
+  .panel .code-chip {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    background: rgba(0,0,0,0.35);
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: var(--orange);
+    border: 1px solid rgba(215, 119, 87, 0.15);
+    display: inline-block;
+  }
+  .panel .invoke-btn {
+    width: 100%;
+    margin-top: 12px;
+    background: var(--orange);
+    color: white;
+    border: none;
+    padding: 11px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .panel .invoke-btn:hover { background: #c46a4a; }
+
+  .hint {
+    position: absolute;
+    bottom: 24px; right: 24px;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+    background: rgba(42, 31, 26, 0.6);
+    backdrop-filter: blur(8px);
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    line-height: 1.6;
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: rgba(42, 31, 26, 0.96);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 11px;
+    border-radius: 8px;
+    font-size: 11px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 30;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  }
+  .tooltip .t-name { font-weight: 600; }
+  .tooltip .t-role { color: var(--orange); font-size: 10px; margin-top: 1px; }
+  .tooltip.show { opacity: 1; }
+
+  /* Loading */
+  .loader {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+    z-index: 100;
+    transition: opacity 0.5s;
+  }
+  .loader .spin {
+    width: 40px; height: 40px;
+    border: 2px solid var(--surface-2);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader.hidden { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader"><div class="spin"></div></div>
+
+<canvas id="canvas"></canvas>
+
+<div class="header">
+  <div class="brand">
+    <h1>Bureau virtuel — <span class="accent">Trading Algo Team</span></h1>
+    <div class="sub">8 agents · open-space</div>
+  </div>
+  <div class="stats"><b id="busy-count">0</b> en mission · <b id="avail-count">0</b> disponibles</div>
+</div>
+
+<div class="legend">
+  <div class="title">Statuts</div>
+  <div class="item"><span class="dot green"></span> Disponible</div>
+  <div class="item"><span class="dot orange"></span> En mission</div>
+  <div class="item"><span class="dot red"></span> Alerte</div>
+  <div class="item"><span class="dot grey"></span> Off-duty</div>
+</div>
+
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <button class="close" id="close-panel">×</button>
+    <div id="panel-head-content"></div>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <div class="t-name"></div>
+  <div class="t-role"></div>
+</div>
+
+<div class="hint">
+  🖱️ <b>Glisser</b> orbite · <b>Molette</b> zoom<br>
+  <b>Clic</b> sur un agent → fiche
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ============================================================
+// DATA — les 8 agents (synchronisé avec .claude/agents/*.md)
+// ============================================================
+const AGENTS = [
+  {
+    id: 'quant-strategist',
+    name: 'Olivier Vasseur',
+    role: 'Quant Strategist',
+    initials: 'OV',
+    color: 0xD77757,
+    skin: 0xe8c5a0,
+    background: 'PhD Polytechnique. 20 ans en hedge funds : 8 ans Renaissance Technologies (Medallion), 5 ans DE Shaw, 7 ans CTA parisien.',
+    mandate: 'Identifie les edges statistiques. Diagnostic de régime de marché. Choix actif/timeframe/session. Détecte les régime shifts avant qu\'ils ne tuent le PnL.',
+    motto: '« Le marché paie pour assumer un risque qu\'il ne veut pas porter. »',
+    status: 'available',
+    mission: null,
+  },
+  {
+    id: 'mql5-developer',
+    name: 'Marc Tournier',
+    role: 'MQL5 Developer',
+    initials: 'MT',
+    color: 0x6da8d7,
+    skin: 0xd9b48c,
+    background: '15 ans MQL. 6 ans chez un broker FX (intégration EAs clients), 9 ans freelance. 200+ EAs livrés, 3 packages CodeBase MQL5 (50k+ downloads).',
+    mandate: 'Écrit, debug et optimise les EAs en MQL5/MQL4. Maîtrise CTrade, CPositionInfo, handles d\'indicateurs. Vérifie la cohérence MT5.',
+    motto: '« Le bug n\'est jamais où tu crois. Lis les logs avant de toucher au code. »',
+    status: 'busy',
+    mission: 'Refactor anti-stacking sur EA XAU v1.5',
+  },
+  {
+    id: 'backtest-auditor',
+    name: 'Hélène Beaumont',
+    role: 'Backtest Auditor',
+    initials: 'HB',
+    color: 0xa68bc9,
+    skin: 0xe8c5a0,
+    background: 'Master HEC + CFA. 10 ans risk officer BNP Paribas CIB (Model Validation), 5 ans audit interne Man AHL, 3 ans consultante family offices.',
+    mandate: 'Audit statistique des backtests .xlsx. Calcule Sharpe/Sortino/Calmar/MAR/Profit Factor/Pain Index. Détecte over-fitting, look-ahead, survivorship. Rend verdict DÉPLOYABLE / À REVOIR / INUTILISABLE.',
+    motto: '« Tout backtest est un mensonge jusqu\'à preuve du contraire. »',
+    status: 'busy',
+    mission: 'Audit backtest XAU GoldVirtuoso 2025',
+  },
+  {
+    id: 'risk-manager',
+    name: 'Pierre-Louis Cheval',
+    role: 'Risk Manager',
+    initials: 'PC',
+    color: 0xc47163,
+    skin: 0xe8c5a0,
+    background: 'Master Risk Management HEC + FRM. 8 ans Winton Capital ($25B AUM), 7 ans head of risk family office Genève, 5 ans conseil traders algos.',
+    mandate: 'Définit position sizing (max 2 % par trade, quart-Kelly). Limites journalières/hebdo/mensuelles. Stress testing. Kill switches absolus. Audit exposition réelle et stacking.',
+    motto: '« Le premier travail d\'un trader, c\'est de rester dans le jeu. »',
+    status: 'available',
+    mission: null,
+  },
+  {
+    id: 'data-scientist',
+    name: 'Yuna Nakamura',
+    role: 'Data Scientist',
+    initials: 'YN',
+    color: 0x5dbab0,
+    skin: 0xf0d4b3,
+    background: 'PhD Statistiques appliquées Berkeley. Ex-Kaggle Grandmaster. 3 ans Alpaca (crypto MM), 5 ans Susquehanna (options + ML), 4 ans freelance CTAs.',
+    mandate: 'Analyse data-driven sur logs CSV. Feature engineering. ML uniquement si justifié (rarement). Tests de significativité, walk-forward CV, ONNX export.',
+    motto: '« Le ML est un marteau. Pas tout n\'est un clou. »',
+    status: 'available',
+    mission: null,
+  },
+  {
+    id: 'forward-test-watchman',
+    name: 'Sébastien Reverdy',
+    role: 'Forward Test Watchman',
+    initials: 'SR',
+    color: 0xe0a050,
+    skin: 0xd9b48c,
+    background: '18 ans execution trader. 7 ans Crédit Agricole CIB (desk FX), 6 ans head of execution broker prime Londres, 5 ans CTA "production gap".',
+    mandate: 'Audit hebdomadaire forward test. Compare démo/live vs backtest. Score de drift. Détection précoce des dérives (spread, slippage, news).',
+    motto: '« Le backtest est un fantasme. Le forward test est la vérité. »',
+    status: 'busy',
+    mission: 'Drift report semaine 23 — XAU',
+  },
+  {
+    id: 'discipline-coach',
+    name: 'Aïcha Diop',
+    role: 'Discipline Coach',
+    initials: 'AD',
+    color: 0xd49aa8,
+    skin: 0xa67c52,
+    background: 'Master Behavioral Finance LSE + DESS Psychologie. 8 ans trader prop firm (FTMO, Topstep), 4 ans formatrice, 8 ans psychologue financière (200+ clients).',
+    mandate: 'Tient le journal de trading. Détecte les biais (récence, aversion, FOMO, revenge). Impose les règles écrites. Check-ins quotidiens et mensuels. Prépare aux pertes.',
+    motto: '« La technique compte pour 20 %. Le mental compte pour 80 %. »',
+    status: 'available',
+    mission: null,
+  },
+  {
+    id: 'broker-execution-specialist',
+    name: 'Thomas Reinhardt',
+    role: 'Broker Specialist',
+    initials: 'TR',
+    color: 0x5769F7,
+    skin: 0xe8c5a0,
+    background: 'Series 7 + MIFID II. 5 ans sales trader broker prime Londres, 4 ans relationship manager IC Markets, 6 ans consultant indépendant (200+ audits broker).',
+    mandate: 'Audit brokers (spreads réels, commissions, slippage, latence, swaps, régulation). Mapping stratégie ↔ broker. Optimisation VPS, choix data center, setup symboles.',
+    motto: '« Tu ne trades pas le marché. Tu trades à travers un broker. »',
+    status: 'off',
+    mission: null,
+  },
+];
+
+const STATUS_COLORS = {
+  available: 0x6dcc92,
+  busy: 0xe0a050,
+  alert: 0xd96565,
+  off: 0x5a4f47,
+};
+const STATUS_LABEL = {
+  available: { label: 'Disponible', hex: '#6dcc92' },
+  busy: { label: 'En mission', hex: '#e0a050' },
+  alert: { label: 'Alerte', hex: '#d96565' },
+  off: { label: 'Off-duty', hex: '#5a4f47' },
+};
+
+// ============================================================
+// SCENE
+// ============================================================
+const canvas = document.getElementById('canvas');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1a1410);
+scene.fog = new THREE.Fog(0x1a1410, 28, 65);
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
+camera.position.set(20, 16, 22);
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+
+const controls = new OrbitControls(camera, canvas);
+controls.target.set(0, 2, 0);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 10;
+controls.maxDistance = 40;
+controls.maxPolarAngle = Math.PI / 2.1;
+
+// ============================================================
+// LIGHTING — warm, considered
+// ============================================================
+scene.add(new THREE.AmbientLight(0xfff0e0, 0.35));
+
+const sun = new THREE.DirectionalLight(0xffd4a8, 0.7);
+sun.position.set(12, 18, 6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -18;
+sun.shadow.camera.right = 18;
+sun.shadow.camera.top = 18;
+sun.shadow.camera.bottom = -18;
+sun.shadow.bias = -0.0005;
+scene.add(sun);
+
+// Ceiling warm pendants
+const pendants = [];
+for (const [px, pz] of [[-9, 0], [-3, 0], [3, 0], [9, 0]]) {
+  const pendantGroup = new THREE.Group();
+  const cord = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.02, 0.02, 1.5),
+    new THREE.MeshStandardMaterial({ color: 0x1a1410 })
+  );
+  cord.position.set(px, 6.5, pz);
+  scene.add(cord);
+
+  const shade = new THREE.Mesh(
+    new THREE.ConeGeometry(0.4, 0.4, 16, 1, true),
+    new THREE.MeshStandardMaterial({ color: 0x3a2a22, side: THREE.DoubleSide, emissive: 0xffaa66, emissiveIntensity: 0.3 })
+  );
+  shade.position.set(px, 5.55, pz);
+  scene.add(shade);
+
+  const bulb = new THREE.PointLight(0xffc28a, 0.7, 18, 1.8);
+  bulb.position.set(px, 5.3, pz);
+  scene.add(bulb);
+  pendants.push(bulb);
+}
+
+// ============================================================
+// ROOM (floor, walls, ceiling hint)
+// ============================================================
+const floorMat = new THREE.MeshStandardMaterial({ color: 0x2a1f1a, roughness: 0.88 });
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(45, 35), floorMat);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// Rug under central plant
+const rugMat = new THREE.MeshStandardMaterial({ color: 0x553828, roughness: 0.95 });
+const rug = new THREE.Mesh(new THREE.CircleGeometry(3, 32), rugMat);
+rug.rotation.x = -Math.PI / 2;
+rug.position.y = 0.01;
+rug.receiveShadow = true;
+scene.add(rug);
+
+const wallMat = new THREE.MeshStandardMaterial({ color: 0x3a2a22, roughness: 0.92 });
+const wallBack = new THREE.Mesh(new THREE.PlaneGeometry(45, 9), wallMat);
+wallBack.position.set(0, 4.5, -17);
+wallBack.receiveShadow = true;
+scene.add(wallBack);
+
+const wallLeft = new THREE.Mesh(new THREE.PlaneGeometry(35, 9), wallMat);
+wallLeft.position.set(-22, 4.5, 0);
+wallLeft.rotation.y = Math.PI / 2;
+wallLeft.receiveShadow = true;
+scene.add(wallLeft);
+
+const wallRight = new THREE.Mesh(new THREE.PlaneGeometry(35, 9), wallMat);
+wallRight.position.set(22, 4.5, 0);
+wallRight.rotation.y = -Math.PI / 2;
+wallRight.receiveShadow = true;
+scene.add(wallRight);
+
+// "Trading Algo Team" wall sign
+function makeWallSign() {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 256;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = 'rgba(0,0,0,0)';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.fillStyle = '#D77757';
+  ctx.font = 'bold 90px "Helvetica Neue", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('TRADING ALGO', 512, 110);
+  ctx.fillStyle = '#ebdcc8';
+  ctx.font = '38px "Helvetica Neue", sans-serif';
+  ctx.fillText('— une équipe systématique —', 512, 180);
+  const tex = new THREE.CanvasTexture(c);
+  const sign = new THREE.Mesh(
+    new THREE.PlaneGeometry(10, 2.5),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true })
+  );
+  sign.position.set(0, 5.5, -16.9);
+  scene.add(sign);
+}
+makeWallSign();
+
+// ============================================================
+// DESKS — 8 postes, 2 rangées de 4
+// ============================================================
+const DESK_POSITIONS = [
+  { x: -10, z: -5, rot: 0 },    // back row
+  { x:  -3, z: -5, rot: 0 },
+  { x:   3, z: -5, rot: 0 },
+  { x:  10, z: -5, rot: 0 },
+  { x: -10, z:  5, rot: Math.PI },  // front row (facing back)
+  { x:  -3, z:  5, rot: Math.PI },
+  { x:   3, z:  5, rot: Math.PI },
+  { x:  10, z:  5, rot: Math.PI },
+];
+
+const agentMeshes = [];
+const interactables = [];
+
+function makeAgent(agent, pos) {
+  const group = new THREE.Group();
+  group.position.set(pos.x, 0, pos.z);
+  group.rotation.y = pos.rot;
+
+  // ---- Desk top
+  const deskTop = new THREE.Mesh(
+    new THREE.BoxGeometry(4.2, 0.12, 2),
+    new THREE.MeshStandardMaterial({ color: 0x5a4030, roughness: 0.6, metalness: 0.1 })
+  );
+  deskTop.position.y = 1.0;
+  deskTop.castShadow = true;
+  deskTop.receiveShadow = true;
+  group.add(deskTop);
+
+  // ---- Desk legs (panels)
+  const legMat = new THREE.MeshStandardMaterial({ color: 0x2a1f18, roughness: 0.8 });
+  const legL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.0, 1.8), legMat);
+  legL.position.set(-2.0, 0.5, 0);
+  legL.castShadow = true;
+  group.add(legL);
+  const legR = legL.clone();
+  legR.position.x = 2.0;
+  group.add(legR);
+
+  // ---- Monitor stand + arm
+  const monitorBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.2, 0.25, 0.08),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.5, roughness: 0.4 })
+  );
+  monitorBase.position.set(0, 1.08, -0.4);
+  group.add(monitorBase);
+
+  const monitorStand = new THREE.Mesh(
+    new THREE.BoxGeometry(0.08, 0.5, 0.08),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.5 })
+  );
+  monitorStand.position.set(0, 1.4, -0.4);
+  group.add(monitorStand);
+
+  // ---- Monitor body
+  const monitor = new THREE.Mesh(
+    new THREE.BoxGeometry(2.2, 1.25, 0.1),
+    new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.4 })
+  );
+  monitor.position.set(0, 1.85, -0.4);
+  monitor.castShadow = true;
+  group.add(monitor);
+
+  // ---- Screen content (canvas texture per agent)
+  const screenCanvas = makeScreenCanvas(agent);
+  const screenTex = new THREE.CanvasTexture(screenCanvas);
+  const screen = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.08, 1.13),
+    new THREE.MeshBasicMaterial({ map: screenTex })
+  );
+  screen.position.set(0, 1.85, -0.34);
+  group.add(screen);
+  interactables.push(screen);
+
+  // ---- Keyboard
+  const keyboard = new THREE.Mesh(
+    new THREE.BoxGeometry(1.2, 0.04, 0.35),
+    new THREE.MeshStandardMaterial({ color: 0x1a1a1f, roughness: 0.5 })
+  );
+  keyboard.position.set(0, 1.08, 0.15);
+  keyboard.castShadow = true;
+  group.add(keyboard);
+
+  // ---- Mug (warmth)
+  const mug = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.1, 0.22, 16),
+    new THREE.MeshStandardMaterial({ color: 0xebdcc8, roughness: 0.7 })
+  );
+  mug.position.set(-1.6, 1.17, 0.3);
+  mug.castShadow = true;
+  group.add(mug);
+
+  // ---- Chair (seat + back + post)
+  const chairMat = new THREE.MeshStandardMaterial({ color: 0x1f1c20, roughness: 0.5 });
+  const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.12, 0.75), chairMat);
+  chairSeat.position.set(0, 0.55, 1.1);
+  chairSeat.castShadow = true;
+  group.add(chairSeat);
+
+  const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.1), chairMat);
+  chairBack.position.set(0, 1.1, 1.45);
+  chairBack.castShadow = true;
+  group.add(chairBack);
+
+  const chairPost = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.04, 0.04, 0.45),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+  );
+  chairPost.position.set(0, 0.27, 1.1);
+  group.add(chairPost);
+
+  const chairBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.4, 0.4, 0.06),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+  );
+  chairBase.position.set(0, 0.04, 1.1);
+  group.add(chairBase);
+
+  // ---- Avatar : capsule body + sphere head + colored "shirt"
+  const avatarGroup = new THREE.Group();
+  avatarGroup.position.set(0, 0, 1.1);
+
+  // Hidden when off-duty
+  avatarGroup.visible = agent.status !== 'off';
+
+  // Lower body (pants)
+  const pants = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.22, 0.22, 0.55),
+    new THREE.MeshStandardMaterial({ color: 0x1a1a22, roughness: 0.7 })
+  );
+  pants.position.y = 0.85;
+  pants.castShadow = true;
+  avatarGroup.add(pants);
+
+  // Torso (shirt with agent color)
+  const torso = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.28, 0.45, 4, 12),
+    new THREE.MeshStandardMaterial({ color: agent.color, roughness: 0.55 })
+  );
+  torso.position.y = 1.42;
+  torso.castShadow = true;
+  avatarGroup.add(torso);
+
+  // Head
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.24, 20, 20),
+    new THREE.MeshStandardMaterial({ color: agent.skin, roughness: 0.65 })
+  );
+  head.position.y = 1.92;
+  head.castShadow = true;
+  avatarGroup.add(head);
+
+  // Hair (slightly darker cap on top)
+  const hair = new THREE.Mesh(
+    new THREE.SphereGeometry(0.245, 20, 20, 0, Math.PI * 2, 0, Math.PI / 2.4),
+    new THREE.MeshStandardMaterial({ color: 0x2a1f15, roughness: 0.8 })
+  );
+  hair.position.y = 1.93;
+  avatarGroup.add(hair);
+
+  interactables.push(torso, head);
+  group.add(avatarGroup);
+
+  // ---- Status LED (floating)
+  const ledGeo = new THREE.SphereGeometry(0.1, 16, 16);
+  const ledMat = new THREE.MeshBasicMaterial({ color: STATUS_COLORS[agent.status] });
+  const led = new THREE.Mesh(ledGeo, ledMat);
+  led.position.set(0, 2.95, 0);
+  group.add(led);
+  interactables.push(led);
+
+  const ledLight = new THREE.PointLight(STATUS_COLORS[agent.status], 0.6, 2.5);
+  ledLight.position.set(0, 2.95, 0);
+  group.add(ledLight);
+
+  // ---- Floating name plate (always faces camera)
+  const plate = makeNamePlate(agent);
+  plate.position.set(0, 2.55, 0);
+  group.add(plate);
+  interactables.push(plate);
+
+  // Bookkeeping
+  group.userData = { agent, led, ledLight, plate, avatarGroup, torso, head };
+  scene.add(group);
+  agentMeshes.push(group);
+
+  // Map interactables → group for raycast lookup
+  for (const obj of [screen, torso, head, led, plate, deskTop]) {
+    obj.userData.agentGroup = group;
+  }
+
+  return group;
+}
+
+// ============================================================
+// Screen canvas (per-agent terminal-style mockup)
+// ============================================================
+function makeScreenCanvas(agent) {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 576;
+  const ctx = c.getContext('2d');
+  // Background
+  ctx.fillStyle = '#0d0a08';
+  ctx.fillRect(0, 0, c.width, c.height);
+
+  // Window chrome
+  ctx.fillStyle = '#1a1410';
+  ctx.fillRect(0, 0, c.width, 40);
+  // Dots
+  ['#ff5f56', '#ffbd2e', '#27c93f'].forEach((col, i) => {
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.arc(20 + i * 22, 20, 7, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  // Title
+  ctx.fillStyle = '#8a7c6c';
+  ctx.font = '20px monospace';
+  ctx.fillText(`~/trading/${agent.id}`, 110, 28);
+
+  // Accent line
+  ctx.fillStyle = '#' + agent.color.toString(16).padStart(6, '0');
+  ctx.fillRect(0, 40, c.width, 3);
+
+  // Content
+  ctx.font = '20px monospace';
+  const role = agent.role;
+  ctx.fillStyle = '#' + agent.color.toString(16).padStart(6, '0');
+  ctx.fillText(`# ${role}`, 30, 90);
+  ctx.fillStyle = '#ebdcc8';
+  ctx.fillText(`$ status: ${agent.status}`, 30, 130);
+  if (agent.mission) {
+    ctx.fillStyle = '#e0a050';
+    ctx.fillText(`▸ mission: ${agent.mission.slice(0, 45)}`, 30, 165);
+  } else {
+    ctx.fillStyle = '#6dcc92';
+    ctx.fillText(`▸ idle, awaiting tasks`, 30, 165);
+  }
+
+  // Fake terminal lines
+  ctx.fillStyle = '#5a4f47';
+  ctx.font = '16px monospace';
+  const lines = generateFakeTerminal(agent);
+  lines.forEach((line, i) => {
+    ctx.fillText(line, 30, 220 + i * 26);
+  });
+
+  // Cursor blink (just visual hint)
+  ctx.fillStyle = '#' + agent.color.toString(16).padStart(6, '0');
+  ctx.fillRect(30, 220 + lines.length * 26 + 4, 12, 18);
+
+  return c;
+}
+
+function generateFakeTerminal(agent) {
+  const base = {
+    'quant-strategist': [
+      '> diagnostic XAUUSD regime...',
+      '  regime: TRENDING_PARABOLIC (conf 0.78)',
+      '  edge propose: scalp pullbacks H1',
+      '  WARN: regime shift risk in <60d',
+      '✓ rapport livre',
+    ],
+    'mql5-developer': [
+      '> compiling Gold_v15.mq5...',
+      '  fix anti-stacking (Symbol+Magic)',
+      '  IndicatorRelease() in OnDeinit',
+      '  brace balance check: OK',
+      '✓ 0 errors, 0 warnings',
+    ],
+    'backtest-auditor': [
+      '> parsing report_2024-2025.xlsx',
+      '  trades: 487 | WR: 58.2%',
+      '  Sharpe: 1.43 | Sortino: 1.91',
+      '  Calmar: 2.1 | PF: 1.62',
+      '  verdict: A REVOIR (OOS missing)',
+    ],
+    'risk-manager': [
+      '> sizing audit...',
+      '  risk/trade: 0.8% (target 1%)',
+      '  Kelly: 0.04, quart-Kelly: 0.01',
+      '  daily cap: -3.5% | mensuel: -12%',
+      '  ✓ exposition coherente',
+    ],
+    'data-scientist': [
+      '> python analyze_segments.py',
+      '  Fisher exact p=0.034 (hr 6-7 UTC)',
+      '  effect size h=0.21 (small)',
+      '  WARN: n=87 too small',
+      '✗ recommend: collect more data',
+    ],
+    'forward-test-watchman': [
+      '> drift report week 23...',
+      '  WR live: 56.3% (bt: 58.2%)',
+      '  slip avg: 0.4 pts (bt: 0.0)',
+      '  spread bias: +18%',
+      '  drift score: 23/100 OK',
+    ],
+    'discipline-coach': [
+      '> check-in journal...',
+      '  rules followed: 96%',
+      '  PnL checks: 1.4/day (target <2)',
+      '  ✓ aucun override tente',
+      '  next: prepare 8 SL streak',
+    ],
+    'broker-execution-specialist': [
+      '> audit IC Markets vs Pepperstone',
+      '  spread XAU: 0.18 vs 0.21 pts',
+      '  commission: $3.5 vs $3.5',
+      '  latency: 12ms vs 18ms (LD4)',
+      '  rec: IC Markets Raw',
+    ],
+  };
+  return base[agent.id] || [];
+}
+
+// ============================================================
+// Name plate (canvas → texture, always faces camera)
+// ============================================================
+function makeNamePlate(agent) {
+  const c = document.createElement('canvas');
+  c.width = 384; c.height = 96;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = 'rgba(26, 20, 16, 0.92)';
+  ctx.roundRect = ctx.roundRect || function(x, y, w, h, r) {
+    this.beginPath();
+    this.moveTo(x + r, y);
+    this.lineTo(x + w - r, y);
+    this.quadraticCurveTo(x + w, y, x + w, y + r);
+    this.lineTo(x + w, y + h - r);
+    this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    this.lineTo(x + r, y + h);
+    this.quadraticCurveTo(x, y + h, x, y + h - r);
+    this.lineTo(x, y + r);
+    this.quadraticCurveTo(x, y, x + r, y);
+    this.closePath();
+  };
+  ctx.beginPath();
+  ctx.roundRect(4, 4, 376, 88, 12);
+  ctx.fill();
+  ctx.strokeStyle = '#' + agent.color.toString(16).padStart(6, '0');
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#ebdcc8';
+  ctx.font = 'bold 30px "Helvetica Neue", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(agent.name, 192, 44);
+
+  ctx.fillStyle = '#' + agent.color.toString(16).padStart(6, '0');
+  ctx.font = '18px "Helvetica Neue", sans-serif';
+  ctx.fillText(agent.role, 192, 74);
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.minFilter = THREE.LinearFilter;
+  const plate = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.0, 0.5),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true })
+  );
+  return plate;
+}
+
+// Build all agents
+AGENTS.forEach((a, i) => makeAgent(a, DESK_POSITIONS[i]));
+
+// ============================================================
+// Central zone — plant + coffee table (warmth)
+// ============================================================
+const potMat = new THREE.MeshStandardMaterial({ color: 0x6a4a35, roughness: 0.85 });
+const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.35, 0.55), potMat);
+pot.position.set(0, 0.28, 0);
+pot.castShadow = true;
+scene.add(pot);
+
+const leavesMat = new THREE.MeshStandardMaterial({ color: 0x3a5c3a, flatShading: true, roughness: 0.7 });
+for (let i = 0; i < 5; i++) {
+  const leaf = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 0), leavesMat);
+  leaf.position.set(
+    (Math.random() - 0.5) * 0.6,
+    0.9 + Math.random() * 0.5,
+    (Math.random() - 0.5) * 0.6
+  );
+  leaf.castShadow = true;
+  scene.add(leaf);
+}
+
+// ============================================================
+// Raycaster — hover + click
+// ============================================================
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+const tooltip = document.getElementById('tooltip');
+
+function getHitAgentGroup(event) {
+  const rect = canvas.getBoundingClientRect();
+  pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(interactables, false);
+  if (hits.length > 0) {
+    return hits[0].object.userData.agentGroup || null;
+  }
+  return null;
+}
+
+canvas.addEventListener('mousemove', (e) => {
+  const hit = getHitAgentGroup(e);
+  if (hit) {
+    canvas.style.cursor = 'pointer';
+    const a = hit.userData.agent;
+    tooltip.querySelector('.t-name').textContent = a.name;
+    tooltip.querySelector('.t-role').textContent = a.role;
+    tooltip.style.left = (e.clientX + 14) + 'px';
+    tooltip.style.top = (e.clientY - 8) + 'px';
+    tooltip.classList.add('show');
+  } else {
+    canvas.style.cursor = 'default';
+    tooltip.classList.remove('show');
+  }
+});
+
+let down = { x: 0, y: 0 };
+canvas.addEventListener('pointerdown', (e) => { down.x = e.clientX; down.y = e.clientY; });
+canvas.addEventListener('pointerup', (e) => {
+  if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > 4) return; // it was a drag
+  const hit = getHitAgentGroup(e);
+  if (hit) openPanel(hit.userData.agent);
+});
+
+// ============================================================
+// Side panel
+// ============================================================
+const panel = document.getElementById('panel');
+const panelHead = document.getElementById('panel-head-content');
+const panelBody = document.getElementById('panel-body');
+document.getElementById('close-panel').onclick = () => panel.classList.remove('open');
+
+function openPanel(agent) {
+  const s = STATUS_LABEL[agent.status];
+  const hex = '#' + agent.color.toString(16).padStart(6, '0');
+  panelHead.innerHTML = `
+    <div class="avatar" style="background:${hex}">${agent.initials}</div>
+    <h2>${agent.name}</h2>
+    <div class="role">${agent.role}</div>
+  `;
+  panelBody.innerHTML = `
+    <div class="section">
+      <div class="section-title">État</div>
+      <div class="status-pill">
+        <span style="width:8px;height:8px;border-radius:50%;background:${s.hex};box-shadow:0 0 8px ${s.hex}"></span>
+        <span>${s.label}</span>
+      </div>
+    </div>
+    ${agent.mission ? `
+    <div class="section">
+      <div class="section-title">Mission en cours</div>
+      <div class="mission">${agent.mission}</div>
+    </div>` : ''}
+    <div class="section">
+      <div class="section-title">Devise</div>
+      <div class="section-body" style="font-style:italic;color:${hex}">${agent.motto}</div>
+    </div>
+    <div class="section">
+      <div class="section-title">Parcours</div>
+      <div class="section-body">${agent.background}</div>
+    </div>
+    <div class="section">
+      <div class="section-title">Mandat</div>
+      <div class="section-body">${agent.mandate}</div>
+    </div>
+    <div class="section">
+      <div class="section-title">Invocation</div>
+      <div class="code-chip">@${agent.id}</div>
+      <button class="invoke-btn" onclick="navigator.clipboard.writeText('@${agent.id}').then(()=>this.textContent='✓ Copié')">Copier le handle</button>
+    </div>
+  `;
+  panel.classList.add('open');
+}
+
+// ============================================================
+// Stats counter
+// ============================================================
+function refreshStats() {
+  const busy = AGENTS.filter(a => a.status === 'busy').length;
+  const avail = AGENTS.filter(a => a.status === 'available').length;
+  document.getElementById('busy-count').textContent = busy;
+  document.getElementById('avail-count').textContent = avail;
+}
+refreshStats();
+
+// ============================================================
+// Animation loop
+// ============================================================
+const clock = new THREE.Clock();
+function animate() {
+  const t = clock.getElapsedTime();
+
+  agentMeshes.forEach((mesh) => {
+    const { led, ledLight, agent, plate, avatarGroup } = mesh.userData;
+
+    // LED pulse for busy/alert agents
+    if (agent.status === 'busy') {
+      const p = 0.85 + 0.18 * Math.sin(t * 2.5 + mesh.position.x * 0.5);
+      led.scale.setScalar(p);
+      ledLight.intensity = 0.6 * p;
+    } else if (agent.status === 'alert') {
+      const p = 0.7 + 0.3 * Math.sin(t * 6);
+      led.scale.setScalar(p);
+      ledLight.intensity = 0.8 * p;
+    } else {
+      led.scale.setScalar(1);
+    }
+
+    // Subtle avatar "breathing"
+    if (avatarGroup && avatarGroup.visible) {
+      const breath = 1 + Math.sin(t * 1.5 + mesh.position.x) * 0.008;
+      avatarGroup.scale.y = breath;
+    }
+
+    // Plate billboards to camera
+    plate.lookAt(camera.position);
+  });
+
+  // Subtle pendant flicker
+  pendants.forEach((p, i) => {
+    p.intensity = 0.65 + 0.05 * Math.sin(t * 0.5 + i);
+  });
+
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+
+animate();
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// Hide loader once first frame rendered
+requestAnimationFrame(() => {
+  setTimeout(() => document.getElementById('loader').classList.add('hidden'), 200);
+});
+
+// ============================================================
+// PUBLIC API — update status from outside (console)
+//   window.setAgentStatus('mql5-developer', 'busy', 'fix bug X')
+//   window.setAgentStatus('quant-strategist', 'available')
+// ============================================================
+window.setAgentStatus = function(id, status, mission = null) {
+  const mesh = agentMeshes.find(m => m.userData.agent.id === id);
+  if (!mesh) { console.warn('Agent not found:', id); return; }
+  const agent = mesh.userData.agent;
+  agent.status = status;
+  agent.mission = mission;
+  mesh.userData.led.material.color.setHex(STATUS_COLORS[status]);
+  mesh.userData.ledLight.color.setHex(STATUS_COLORS[status]);
+  mesh.userData.avatarGroup.visible = status !== 'off';
+  refreshStats();
+  console.log(`✓ ${agent.name}: ${status}${mission ? ` (${mission})` : ''}`);
+};
+window.listAgents = () => AGENTS.map(a => ({ id: a.id, name: a.name, status: a.status, mission: a.mission }));
+console.log('%c🏢 Trading Algo Office', 'color:#D77757;font-weight:bold;font-size:14px');
+console.log('Update status: window.setAgentStatus(id, status, mission)');
+console.log('List agents:   window.listAgents()');
+</script>
+</body>
+</html>

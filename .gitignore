@@ -19,6 +19,7 @@ src/utils/vendor/
 !.claude/playbook/
 .claude/skills/**/node_modules/
 .claude/settings.local.json
+!office/
 .omx/
 .docs/task/
 # Binary / screenshot files (root only)
