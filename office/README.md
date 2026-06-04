@@ -4,29 +4,23 @@ Open-space circulaire avec 8 vitrines (une par agent) + bureau du chef central.
 
 ---
 
-## 🚀 Comment l'ouvrir (le plus simple)
+## 🚀 Comment l'ouvrir (3 secondes)
 
-### Sur Mac
-1. Va dans le dossier `office/`
-2. **Double-clic sur `lancer-mac.command`**
-3. Une fenêtre Terminal s'ouvre + le navigateur s'ouvre automatiquement sur le bureau virtuel
-4. Quand tu as fini, **ferme le Terminal** (Ctrl+C ou ⌘+W)
+**Double-clic sur `index.html`** → ça s'ouvre dans ton navigateur. C'est tout.
 
-> ⚠️ Premier double-clic : macOS peut bloquer le fichier. Clic-droit dessus → "Ouvrir" → confirme. Une seule fois.
+> Pas besoin de Python, pas besoin de serveur, pas besoin de rien.
 
-### Sur Windows
-1. Va dans le dossier `office/`
-2. **Double-clic sur `lancer-windows.bat`**
-3. Une fenêtre CMD s'ouvre + le navigateur s'ouvre automatiquement
-4. Quand tu as fini, **ferme la fenêtre CMD** (Ctrl+C ou la croix)
+### Si le double-clic n'ouvre pas le navigateur
 
-> ⚠️ Si rien ne se passe, c'est que Python n'est pas installé. Va sur https://www.python.org/downloads/ et coche "Add Python to PATH" pendant l'install. Puis re-double-clic.
+- **Windows** → clic-droit sur `index.html` → "Ouvrir avec" → choisis Chrome ou Edge
+- **Mac** → clic-droit sur `index.html` → "Ouvrir avec" → Chrome ou Safari
+- Ou tu peux aussi utiliser **`lancer-windows.bat`** / **`lancer-mac.command`** qui font la même chose
 
-### Sur Linux
-```bash
-cd office
-./lancer-linux.sh
-```
+### Si la page reste blanche
+
+- **Vérifie ta connexion internet** : Three.js (la lib 3D) est téléchargée depuis un CDN au premier lancement. Une fois en cache navigateur, c'est instantané.
+- **Utilise un navigateur récent** : Chrome, Edge, Firefox ou Safari version 2022+.
+- Si tu vois un message d'erreur sur la page, lis-le, il te dira quoi faire.
 
 ---
 
@@ -47,7 +41,7 @@ cd office
 
 **Méthode 1 (via la fiche agent)** :
 1. Clic sur l'agent dans la scène
-2. Clic sur son nom dans le panneau qui s'ouvre
+2. Clic sur son nom (souligné en pointillé orange)
 3. Tape le nouveau nom → Entrée
 4. La plaque 3D se met à jour en direct
 
@@ -57,7 +51,7 @@ cd office
 3. Clic sur n'importe quel nom pour le modifier
 4. Entrée pour valider
 
-Les nouveaux noms sont **sauvegardés automatiquement** dans le navigateur (localStorage). Au prochain chargement, ils sont conservés.
+Les nouveaux noms sont **sauvegardés automatiquement** dans le navigateur. Au prochain chargement, ils sont conservés.
 
 Pour **réinitialiser tous les noms** : Direction → "Réinitialiser tous les noms".
 
@@ -66,7 +60,7 @@ Pour **réinitialiser tous les noms** : Direction → "Réinitialiser tous les n
 ## 🏢 Ce que tu vois
 
 - **Pièce circulaire** avec sol parquet warm et murs cylindriques
-- **6 "fenêtres"** lumineuses ambrées autour de la pièce (= ambiance soir/coucher de soleil)
+- **6 "fenêtres"** lumineuses ambrées autour de la pièce (ambiance coucher de soleil)
 - **8 cubicules en vitrine** disposés en cercle, parois en verre semi-transparent, encadrement orange
 - À l'intérieur de chaque vitrine : bureau, chaise pivot, moniteur (mockup terminal du métier de l'agent), clavier, mug, plante perso
 - **Avatar** de l'agent assis à son poste (chemise = couleur de l'agent)
@@ -106,22 +100,13 @@ Statuts valides : `'available'`, `'busy'`, `'alert'`, `'off'`.
 
 ---
 
-## ❓ Ça marche pas, que faire ?
-
-- **Le navigateur s'ouvre mais c'est tout blanc** → attends 2-3 secondes, Three.js se charge depuis le CDN (besoin d'internet la 1ère fois)
-- **"Address already in use"** → le port 8765 est pris. Modifie le launcher pour utiliser 8766 ou autre
-- **Page blanche persiste** → ouvre la console JS (F12) pour voir l'erreur, ou essaie un autre navigateur (Chrome / Firefox récents recommandés)
-- **Aucun launcher ne marche** → installe Python 3 : Mac `brew install python`, Linux `sudo apt install python3`, Windows depuis python.org
-
----
-
 ## 📂 Fichiers
 
 ```
 office/
-├── index.html              ← l'app (HTML + Three.js inline)
-├── lancer-mac.command      ← double-clic Mac
-├── lancer-windows.bat      ← double-clic Windows  
-├── lancer-linux.sh         ← Linux
+├── index.html              ← l'app (1 fichier, tout est dedans) ← DOUBLE-CLIC ICI
+├── lancer-windows.bat      ← alternative si le double-clic d'index.html ne marche pas
+├── lancer-mac.command      ← idem pour Mac
+├── lancer-linux.sh         ← idem pour Linux
 └── README.md               ← ce fichier
 ```

@@ -1,34 +1,25 @@
 @echo off
 REM Trading Algo Office - launcher Windows (double-clic)
+REM Ouvre directement index.html dans le navigateur (file://).
+REM Pas besoin de Python, pas besoin de serveur local.
+
 cd /d "%~dp0"
 echo.
 echo  ===========================================
 echo   Trading Algo Office - bureau virtuel 3D
 echo  ===========================================
 echo.
-echo  Le navigateur va s'ouvrir automatiquement.
-echo  Laisse cette fenetre OUVERTE pendant que tu utilises le bureau.
-echo  Pour fermer : Ctrl+C ou ferme cette fenetre.
+echo  Ouverture de index.html dans le navigateur...
 echo.
 
-REM Cherche Python (py launcher d'abord, puis python)
-where py >nul 2>&1
-if %errorlevel%==0 (
-    start "" http://localhost:8765
-    py -m http.server 8765
-    goto :end
-)
-where python >nul 2>&1
-if %errorlevel%==0 (
-    start "" http://localhost:8765
-    python -m http.server 8765
-    goto :end
-)
+start "" "%~dp0index.html"
 
-echo  [ERREUR] Python n'est pas installe.
-echo  Telecharge-le sur https://www.python.org/downloads/
-echo  (coche "Add Python to PATH" pendant l'installation)
+REM Petite pause pour qu'on voie le message si ca a marche
+echo  Si rien ne s'ouvre :
+echo    1. Va dans ce dossier avec l'Explorateur
+echo    2. Double-clic directement sur "index.html"
+echo    3. Si la page reste blanche, utilise Chrome ou Edge recent
+echo       (les anciens navigateurs ne supportent pas le 3D moderne)
 echo.
-pause
-
-:end
+echo  Cette fenetre va se fermer dans 5 secondes.
+timeout /t 5 /nobreak >nul

@@ -335,18 +335,36 @@
 
 <div class="toast" id="toast"></div>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-  }
+<!-- Three.js r147 en UMD : fonctionne en file:// sur tous les navigateurs recents,
+     sans import map, sans module ESM, sans serveur local. -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+
+<!-- Fallback sur unpkg si jsdelivr est bloque -->
+<script>
+if (typeof THREE === 'undefined') {
+  document.write('<script src="https://unpkg.com/three@0.147.0/build/three.min.js"><\/script>');
+  document.write('<script src="https://unpkg.com/three@0.147.0/examples/js/controls/OrbitControls.js"><\/script>');
 }
 </script>
 
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+<script>
+// Verification de chargement
+window.addEventListener('load', () => {
+  if (typeof THREE === 'undefined') {
+    document.getElementById('loader').innerHTML =
+      '<div style="text-align:center;color:#ebdcc8;max-width:400px;padding:24px">' +
+      '<h2 style="color:#D77757;margin-bottom:12px">Three.js n\'a pas pu se charger</h2>' +
+      '<p style="font-size:13px;line-height:1.6;color:#8a7c6c">' +
+      'Verifie ta connexion internet (Three.js est telecharge depuis un CDN au premier lancement) ' +
+      'ou essaie un autre navigateur (Chrome ou Edge recommandes).</p></div>';
+  }
+});
+</script>
+
+<script>
+// Alias pour reduire les diffs avec l'ancien code ESM
+const OrbitControls = THREE.OrbitControls;
 
 // ============================================================
 // DATA — agents (avec overrides localStorage pour le nom)

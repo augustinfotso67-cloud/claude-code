@@ -1,5 +1,6 @@
 #!/bin/bash
-# Trading Algo Office - launcher macOS (double-clic dans Finder)
+# Trading Algo Office - launcher macOS
+# Ouvre directement index.html dans le navigateur (file://).
 cd "$(dirname "$0")"
 
 echo ""
@@ -7,21 +8,15 @@ echo " ==========================================="
 echo "  Trading Algo Office - bureau virtuel 3D"
 echo " ==========================================="
 echo ""
-echo "  Le navigateur va s'ouvrir automatiquement."
-echo "  Laisse ce Terminal OUVERT pendant que tu utilises le bureau."
-echo "  Pour fermer : Ctrl+C ou ferme cette fenetre."
+echo "  Ouverture de index.html dans le navigateur..."
 echo ""
 
-# Ouvre le navigateur après 1s (le temps que le serveur démarre)
-(sleep 1 && open "http://localhost:8765") &
+open "$(pwd)/index.html"
 
-# Démarre le serveur (Python 3 fourni par macOS)
-if command -v python3 >/dev/null 2>&1; then
-    python3 -m http.server 8765
-elif command -v python >/dev/null 2>&1; then
-    python -m http.server 8765
-else
-    echo "[ERREUR] Python n'est pas installe."
-    echo "Installe-le via Homebrew : brew install python"
-    read -p "Appuie sur Entree pour fermer..."
-fi
+echo "  Si rien ne s'ouvre :"
+echo "    1. Va dans ce dossier avec le Finder"
+echo "    2. Double-clic directement sur 'index.html'"
+echo "    3. Si la page reste blanche, utilise Chrome ou Safari recent"
+echo ""
+echo "  Cette fenetre se ferme dans 5 secondes."
+sleep 5
