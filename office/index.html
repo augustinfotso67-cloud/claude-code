@@ -436,7 +436,10 @@
 <div class="activity-feed" id="activity-feed">
   <div class="feed-head">
     <div class="title-row"><span class="live-dot"></span><span>Activité live</span></div>
-    <button class="replay-btn" id="replay-btn" title="Rejoue la séance d'analyse XAU du 5 juin">▶ REPLAY SÉANCE</button>
+    <div style="display:flex;gap:6px">
+      <button class="replay-btn" id="demo-btn" title="Simule une journée de travail (équipe en activité continue)" style="background:transparent;color:var(--orange);border:1px solid var(--border-strong)">⚡ DEMO LIVE</button>
+      <button class="replay-btn" id="replay-btn" title="Rejoue la séance d'analyse XAU">▶ REPLAY</button>
+    </div>
   </div>
   <div class="feed-body" id="feed-body">
     <div class="empty">Aucun agent actif.<br>Clique <b>▶ REPLAY SÉANCE</b> pour rejouer l'analyse XAU qu'on vient de faire.</div>
@@ -946,7 +949,38 @@ function makeSeatedAvatar({ color, skin, scale = 1, headOffset = 0 }) {
   hair.position.set(0, 1.71 + headOffset, -0.05 * scale);
   g.add(hair);
 
-  return { group: g, torso, head };
+  // "Thinking halo" — sphère lumineuse autour de la tête, invisible par défaut.
+  // Devient visible et pulse quand l'agent est busy (animation gérée dans animate()).
+  const halo = new THREE.Mesh(
+    new THREE.SphereGeometry(0.45 * scale, 24, 24),
+    new THREE.MeshBasicMaterial({
+      color, transparent: true, opacity: 0,
+      side: THREE.BackSide, depthWrite: false,
+    })
+  );
+  halo.position.copy(head.position);
+  g.add(halo);
+
+  // Petite particule "thought bubble" qui orbite quand busy
+  const orbiter = new THREE.Mesh(
+    new THREE.SphereGeometry(0.06 * scale, 12, 12),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0 })
+  );
+  orbiter.position.set(0.45 * scale, 1.85 + headOffset, -0.05 * scale);
+  g.add(orbiter);
+
+  // Sous-groupe "upper" (tete + cheveux + halo + orbiter) pour pouvoir
+  // hocher la tete sans bouger le tronc
+  const headGroup = new THREE.Group();
+  head.position.set(0, 0, 0);
+  hair.position.set(0, 0.01, 0);
+  halo.position.set(0, 0, 0);
+  g.remove(head); g.remove(hair); g.remove(halo);
+  headGroup.add(head); headGroup.add(hair); headGroup.add(halo);
+  headGroup.position.set(0, 1.7 + headOffset, -0.05 * scale);
+  g.add(headGroup);
+
+  return { group: g, torso, head, halo, headGroup, orbiter };
 }
 
 // ============================================================
@@ -1097,28 +1131,30 @@ function makeAgentSetup(agent) {
   );
   plantLeaf.position.set(1.2, 1.4, -0.9); group.add(plantLeaf);
 
-  // Chaise pivot
+  // Chaise pivot — dossier DERRIÈRE l'agent (vers le centre de la pièce),
+  // donc l'agent assis fait face en -z = vers le bureau et son écran.
   const chairMat = new THREE.MeshStandardMaterial({ color: 0x1f1c20, roughness: 0.5 });
   const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.1, 0.7), chairMat);
-  chairSeat.position.set(0, 0.62, -0.05);
+  chairSeat.position.set(0, 0.62, 0);
   chairSeat.castShadow = true; chairSeat.receiveShadow = true; group.add(chairSeat);
   const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.72, 1.0, 0.1), chairMat);
-  chairBack.position.set(0, 1.12, -0.4); chairBack.castShadow = true; group.add(chairBack);
+  chairBack.position.set(0, 1.12, 0.35); chairBack.castShadow = true; group.add(chairBack);
   const chairPost = new THREE.Mesh(
     new THREE.CylinderGeometry(0.04, 0.04, 0.5),
     new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
   );
-  chairPost.position.set(0, 0.32, -0.05); group.add(chairPost);
+  chairPost.position.set(0, 0.32, 0); group.add(chairPost);
   const chairBase = new THREE.Mesh(
     new THREE.CylinderGeometry(0.35, 0.35, 0.05),
     new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
   );
-  chairBase.position.set(0, 0.05, -0.05); group.add(chairBase);
+  chairBase.position.set(0, 0.05, 0); group.add(chairBase);
 
-  // ---- Avatar ASSIS
+  // ---- Avatar ASSIS face au bureau (rotation Math.PI pour qu'il regarde -z)
   const avatarBuilt = makeSeatedAvatar({ color: agent.color, skin: agent.skin, scale: 1 });
   const avatarGroup = avatarBuilt.group;
-  avatarGroup.position.set(0, 0, -0.05);
+  avatarGroup.position.set(0, 0, 0);
+  avatarGroup.rotation.y = Math.PI;   // <- face au bureau (qui est en -z)
   avatarGroup.visible = agent.status !== 'off';
   group.add(avatarGroup);
   interactables.push(avatarBuilt.torso, avatarBuilt.head);
@@ -1138,7 +1174,13 @@ function makeAgentSetup(agent) {
   plate.position.set(0, 2.2, -0.05); group.add(plate);
   interactables.push(plate);
 
-  group.userData = { agent, led, ledLight, plate, avatarGroup, torso: avatarBuilt.torso, screen, screenCanvas };
+  group.userData = {
+    agent, led, ledLight, plate, avatarGroup,
+    torso: avatarBuilt.torso, head: avatarBuilt.head,
+    halo: avatarBuilt.halo, headGroup: avatarBuilt.headGroup,
+    orbiter: avatarBuilt.orbiter,
+    screen, screenCanvas
+  };
   for (const obj of [screen, avatarBuilt.torso, avatarBuilt.head, led, plate]) {
     obj.userData.agentGroup = group;
   }
@@ -1300,6 +1342,9 @@ function buildChefDesk() {
     avatarGroup: chefAvatarBuilt.group,
     chefTorso: chefAvatarBuilt.torso,
     chefHead: chefAvatarBuilt.head,
+    chefHalo: chefAvatarBuilt.halo,
+    chefHeadGroup: chefAvatarBuilt.headGroup,
+    chefOrbiter: chefAvatarBuilt.orbiter,
     plate: chefPlate, led: chefLed, ledLight: chefLedLight,
   };
   hitbox.userData.chefGroup = g;
@@ -2104,13 +2149,23 @@ function addActivityEntry(agentId, mission, status = 'running') {
   return entry;
 }
 
+function setChefStatus(status) {
+  CHEF.status = status;
+  if (chefMesh && chefMesh.userData.led) {
+    chefMesh.userData.led.material.color.setHex(STATUS_COLORS[status]);
+    chefMesh.userData.ledLight.color.setHex(STATUS_COLORS[status]);
+  }
+}
+
 // addActivity(id, mission, durationSec)
-// → met l'agent en busy + log dans le feed + repasse en available a la fin
+// → met l'agent (ou le chef) en busy + log dans le feed + animation halo/tete + repasse en available
 function addActivity(agentId, mission, durationSec = 10) {
-  if (agentId !== 'chef') setAgentStatusInternal(agentId, 'busy', mission);
+  if (agentId === 'chef') setChefStatus('busy');
+  else setAgentStatusInternal(agentId, 'busy', mission);
   const entry = addActivityEntry(agentId, mission, 'running');
   setTimeout(() => {
-    if (agentId !== 'chef') setAgentStatusInternal(agentId, 'available', null);
+    if (agentId === 'chef') setChefStatus('available');
+    else setAgentStatusInternal(agentId, 'available', null);
     const dot = entry.querySelector('.agent-dot');
     const tag = entry.querySelector('.status-tag');
     dot.classList.remove('running');
@@ -2119,6 +2174,59 @@ function addActivity(agentId, mission, durationSec = 10) {
     tag.classList.add('done');
   }, durationSec * 1000);
 }
+
+// ============================================================
+// MODE DEMO CONTINU — simule une journee de travail dans l'agence
+// ============================================================
+let demoModeOn = false;
+let demoTimer = null;
+const DEMO_TASKS = [
+  ['quant-strategist',     'Diagnostic régime EUR/USD H1',                          8],
+  ['mql5-developer',       'Compilation et test Gold_v15.mq5',                       10],
+  ['backtest-auditor',     'Audit verdict backtest XAU 2024-2025',                   12],
+  ['risk-manager',         'Audit exposition agrégée et sizing journalier',          7],
+  ['data-scientist',       'Analyse Fisher segments horaires 6-10 UTC',              11],
+  ['forward-test-watchman','Drift report hebdomadaire — comparaison live vs bt',     9],
+  ['discipline-coach',     'Check-in journalier · journal de trading',               6],
+  ['broker-execution-specialist', 'Audit spread + slippage Exness · 24h',            8],
+  ['quant-strategist',     'Veille macro · publication Fed minutes',                 6],
+  ['mql5-developer',       'Refactor anti-stacking + IndicatorRelease()',            9],
+  ['chef',                 'Briefing matinal équipe + revue PnL veille',             7],
+  ['risk-manager',         'Stress test 8 SL consécutifs · DD projeté',              5],
+];
+
+function pickRandomTask() {
+  return DEMO_TASKS[Math.floor(Math.random() * DEMO_TASKS.length)];
+}
+
+function tickDemo() {
+  if (!demoModeOn) return;
+  // Choisir 1-2 agents disponibles à mettre au travail
+  const busyIds = new Set(AGENTS.filter(a => a.status === 'busy').map(a => a.id));
+  if (CHEF.status === 'busy') busyIds.add('chef');
+  const tries = 5;
+  for (let i = 0; i < tries; i++) {
+    const [id, mission, dur] = pickRandomTask();
+    if (busyIds.has(id)) continue;
+    addActivity(id, mission, dur);
+    break;
+  }
+  // Cadencement : nouvelle tâche toutes les 3 à 6 secondes
+  demoTimer = setTimeout(tickDemo, 3000 + Math.random() * 3000);
+}
+
+function startDemoMode() {
+  demoModeOn = true;
+  toast('Mode démo continu : ON');
+  tickDemo();
+}
+function stopDemoMode() {
+  demoModeOn = false;
+  if (demoTimer) clearTimeout(demoTimer);
+  toast('Mode démo continu : OFF');
+}
+window.startDemoMode = startDemoMode;
+window.stopDemoMode = stopDemoMode;
 
 // ============================================================
 // REPLAY de la séance d'analyse XAU du 5 juin 2026
@@ -2159,9 +2267,26 @@ function replaySession() {
 }
 
 replayBtn.onclick = replaySession;
+
+const demoBtn = document.getElementById('demo-btn');
+demoBtn.onclick = () => {
+  if (demoModeOn) {
+    stopDemoMode();
+    demoBtn.textContent = '⚡ DEMO LIVE';
+    demoBtn.style.background = 'transparent';
+    demoBtn.style.color = 'var(--orange)';
+  } else {
+    startDemoMode();
+    demoBtn.textContent = '■ STOP DEMO';
+    demoBtn.style.background = 'var(--orange)';
+    demoBtn.style.color = 'white';
+  }
+};
+
 window.addActivity = addActivity;
 window.replaySession = replaySession;
 window.addActivityEntry = addActivityEntry;
+window.setChefStatus = setChefStatus;
 
 // ============================================================
 // ANIMATION
@@ -2172,18 +2297,60 @@ function animate() {
 
   // Agents
   agentMeshes.forEach(mesh => {
-    const { led, ledLight, agent, plate, avatarGroup } = mesh.userData;
+    const { led, ledLight, agent, plate, avatarGroup, halo, headGroup, orbiter } = mesh.userData;
+    const phaseSeed = mesh.position.x * 0.5;
+
     if (agent.status === 'busy') {
-      const p = 0.85 + 0.18 * Math.sin(t * 2.5 + mesh.position.x * 0.5);
+      // LED pulse
+      const p = 0.85 + 0.18 * Math.sin(t * 2.5 + phaseSeed);
       led.scale.setScalar(p); ledLight.intensity = 0.55 * p;
+
+      // Halo "thinking" qui pulse autour de la tête (visible en busy)
+      if (halo) {
+        halo.material.opacity = 0.22 + 0.12 * Math.sin(t * 3 + phaseSeed);
+        const s = 1 + 0.18 * Math.sin(t * 2 + phaseSeed);
+        halo.scale.setScalar(s);
+      }
+      // Tete qui hoche legerement (signe d'activite mentale)
+      if (headGroup) {
+        headGroup.rotation.y = Math.sin(t * 1.8 + phaseSeed) * 0.18;
+        headGroup.rotation.x = Math.sin(t * 1.2 + phaseSeed) * 0.07;
+      }
+      // Particule "pensée" qui orbite autour de la tête
+      if (orbiter) {
+        orbiter.material.opacity = 0.85;
+        const r = 0.5;
+        orbiter.position.x = Math.cos(t * 2.5 + phaseSeed) * r;
+        orbiter.position.z = Math.sin(t * 2.5 + phaseSeed) * r;
+        orbiter.position.y = 0.1 + Math.sin(t * 3) * 0.05;
+      }
     } else if (agent.status === 'alert') {
       const p = 0.7 + 0.3 * Math.sin(t * 6);
       led.scale.setScalar(p); ledLight.intensity = 0.8 * p;
+      // Halo rouge pulsant fort
+      if (halo) {
+        halo.material.color.setHex(0xd96565);
+        halo.material.opacity = 0.3 + 0.2 * Math.sin(t * 8);
+        halo.scale.setScalar(1.2);
+      }
+      if (headGroup) headGroup.rotation.set(0, 0, 0);
+      if (orbiter) orbiter.material.opacity = 0;
     } else {
+      // idle / off
       led.scale.setScalar(1);
+      if (halo) {
+        halo.material.opacity = 0;
+        halo.material.color.setHex(agent.color);
+      }
+      if (headGroup) {
+        // léger retour à la position neutre
+        headGroup.rotation.y *= 0.92;
+        headGroup.rotation.x *= 0.92;
+      }
+      if (orbiter) orbiter.material.opacity = 0;
     }
     if (avatarGroup && avatarGroup.visible) {
-      avatarGroup.scale.y = 1 + Math.sin(t * 1.5 + mesh.position.x) * 0.006;
+      avatarGroup.scale.y = 1 + Math.sin(t * 1.5 + phaseSeed) * 0.006;
     }
     plate.lookAt(camera.position);
   });
@@ -2195,6 +2362,29 @@ function animate() {
     if (chefMesh.userData.plate) chefMesh.userData.plate.lookAt(camera.position);
     if (chefMesh.userData.avatarGroup) {
       chefMesh.userData.avatarGroup.scale.y = 1 + Math.sin(t * 1.3) * 0.006;
+    }
+    // Halo DG en busy
+    if (chefMesh.userData.chefHalo && CHEF.status === 'busy') {
+      chefMesh.userData.chefHalo.material.opacity = 0.22 + 0.12 * Math.sin(t * 3);
+      chefMesh.userData.chefHalo.scale.setScalar(1 + 0.18 * Math.sin(t * 2));
+      if (chefMesh.userData.chefHeadGroup) {
+        chefMesh.userData.chefHeadGroup.rotation.y = Math.sin(t * 1.8) * 0.18;
+        chefMesh.userData.chefHeadGroup.rotation.x = Math.sin(t * 1.2) * 0.07;
+      }
+      if (chefMesh.userData.chefOrbiter) {
+        chefMesh.userData.chefOrbiter.material.opacity = 0.85;
+        chefMesh.userData.chefOrbiter.position.x = Math.cos(t * 2.5) * 0.5;
+        chefMesh.userData.chefOrbiter.position.z = Math.sin(t * 2.5) * 0.5;
+      }
+    } else if (chefMesh.userData.chefHalo) {
+      chefMesh.userData.chefHalo.material.opacity = 0;
+      if (chefMesh.userData.chefHeadGroup) {
+        chefMesh.userData.chefHeadGroup.rotation.y *= 0.92;
+        chefMesh.userData.chefHeadGroup.rotation.x *= 0.92;
+      }
+      if (chefMesh.userData.chefOrbiter) {
+        chefMesh.userData.chefOrbiter.material.opacity = 0;
+      }
     }
   }
 
