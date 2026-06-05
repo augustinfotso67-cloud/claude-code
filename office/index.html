@@ -284,6 +284,106 @@
     box-shadow: 0 4px 14px rgba(0,0,0,0.5);
   }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* Activity Feed — voir les agents travailler */
+  .activity-feed {
+    position: absolute;
+    top: 70px; left: 24px;
+    width: 330px;
+    max-height: calc(100vh - 250px);
+    background: rgba(31, 24, 20, 0.93);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    z-index: 9;
+    display: flex; flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .activity-feed .feed-head {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(215, 119, 87, 0.15);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .activity-feed .feed-head .title-row { display: flex; align-items: center; gap: 8px; }
+  .activity-feed .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #6dcc92; box-shadow: 0 0 8px #6dcc92;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  .activity-feed .replay-btn {
+    background: var(--orange);
+    color: white;
+    border: none;
+    padding: 5px 11px;
+    border-radius: 14px;
+    font-size: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
+  }
+  .activity-feed .replay-btn:hover { background: var(--orange-2); }
+  .activity-feed .replay-btn:disabled { opacity: 0.5; cursor: wait; }
+  .activity-feed .feed-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 10px;
+  }
+  .activity-feed .entry {
+    padding: 9px 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 11px;
+    line-height: 1.5;
+    display: flex; gap: 9px;
+    animation: slideIn 0.35s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes slideIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+  .activity-feed .entry .time {
+    color: var(--text-muted);
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 10px;
+    white-space: nowrap;
+    margin-top: 1px;
+  }
+  .activity-feed .entry .agent-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .activity-feed .entry .agent-dot.running { animation: pulse 1.2s ease-in-out infinite; }
+  .activity-feed .entry .content { flex: 1; }
+  .activity-feed .entry .agent-name { font-weight: 600; color: var(--text); }
+  .activity-feed .entry .mission {
+    color: var(--text-muted);
+    font-size: 10px;
+    margin-top: 2px;
+    line-height: 1.45;
+  }
+  .activity-feed .entry .status-tag {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-top: 4px;
+    font-weight: 600;
+  }
+  .activity-feed .entry .status-tag.running { color: #e0a050; }
+  .activity-feed .entry .status-tag.done    { color: #6dcc92; }
+  .activity-feed .entry .status-tag.recv    { color: var(--orange); }
+  .activity-feed .empty {
+    padding: 28px 14px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-style: italic;
+    line-height: 1.6;
+  }
 </style>
 </head>
 <body>
@@ -332,6 +432,16 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="activity-feed" id="activity-feed">
+  <div class="feed-head">
+    <div class="title-row"><span class="live-dot"></span><span>Activité live</span></div>
+    <button class="replay-btn" id="replay-btn" title="Rejoue la séance d'analyse XAU du 5 juin">▶ REPLAY SÉANCE</button>
+  </div>
+  <div class="feed-body" id="feed-body">
+    <div class="empty">Aucun agent actif.<br>Clique <b>▶ REPLAY SÉANCE</b> pour rejouer l'analyse XAU qu'on vient de faire.</div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
@@ -1955,6 +2065,103 @@ console.log('%c🏢 Trading Algo Office (v3)', 'color:#D77757;font-weight:bold;f
 console.log('• setAgentStatus(id, status, mission)');
 console.log('• setAgentName(id, name)  // id="chef" pour le DG');
 console.log('• listAgents()');
+console.log('• addActivity(id, mission, sec)  // log + animation');
+console.log('• replaySession()                // rejoue la séance XAU');
+
+// ============================================================
+// ACTIVITY FEED — voir les agents travailler en direct
+// ============================================================
+const feedBody = document.getElementById('feed-body');
+const replayBtn = document.getElementById('replay-btn');
+
+function fmtTime(d = new Date()) {
+  return d.toTimeString().slice(0, 8);
+}
+function getAgentOrChef(id) {
+  if (id === 'chef') return CHEF;
+  return AGENTS.find(a => a.id === id);
+}
+
+function addActivityEntry(agentId, mission, status = 'running') {
+  const agent = getAgentOrChef(agentId) || { name: agentId, color: 0xD77757 };
+  const empty = feedBody.querySelector('.empty');
+  if (empty) empty.remove();
+
+  const hex = '#' + agent.color.toString(16).padStart(6, '0');
+  const entry = document.createElement('div');
+  entry.className = 'entry';
+  entry.innerHTML = `
+    <div class="time">${fmtTime()}</div>
+    <div class="agent-dot ${status === 'running' ? 'running' : ''}" style="background:${hex};box-shadow:0 0 6px ${hex}"></div>
+    <div class="content">
+      <div class="agent-name">${escapeHtml(agent.name)}</div>
+      <div class="mission">${escapeHtml(mission)}</div>
+      <div class="status-tag ${status}">${status === 'running' ? '▸ EN COURS…' : status === 'recv' ? '📥 REÇU' : '✓ TERMINÉ'}</div>
+    </div>
+  `;
+  feedBody.insertBefore(entry, feedBody.firstChild);
+  feedBody.scrollTop = 0;
+  return entry;
+}
+
+// addActivity(id, mission, durationSec)
+// → met l'agent en busy + log dans le feed + repasse en available a la fin
+function addActivity(agentId, mission, durationSec = 10) {
+  if (agentId !== 'chef') setAgentStatusInternal(agentId, 'busy', mission);
+  const entry = addActivityEntry(agentId, mission, 'running');
+  setTimeout(() => {
+    if (agentId !== 'chef') setAgentStatusInternal(agentId, 'available', null);
+    const dot = entry.querySelector('.agent-dot');
+    const tag = entry.querySelector('.status-tag');
+    dot.classList.remove('running');
+    tag.textContent = '✓ TERMINÉ';
+    tag.classList.remove('running');
+    tag.classList.add('done');
+  }, durationSec * 1000);
+}
+
+// ============================================================
+// REPLAY de la séance d'analyse XAU du 5 juin 2026
+// (reproduit ce qui s'est passé dans la conversation Claude)
+// ============================================================
+function replaySession() {
+  replayBtn.disabled = true;
+  replayBtn.textContent = '● EN COURS…';
+
+  // Reset
+  AGENTS.forEach(a => {
+    if (a.status === 'busy') setAgentStatusInternal(a.id, 'available', null);
+  });
+
+  // 1) Augustin partage le screenshot
+  setTimeout(() => addActivityEntry('chef',
+    'Partage 3 screenshots XAUUSDm (H4, H1, M15) — « qu\'en pensez-vous ? »', 'recv'), 200);
+
+  // 2) Le quant-strategist analyse
+  setTimeout(() => addActivity('quant-strategist',
+    'Diagnostic régime XAU 3 TF · setup short 4475-4490', 9), 1200);
+
+  // 3) Le risk-manager planifie
+  setTimeout(() => addActivity('risk-manager',
+    'Plan de gestion · sizing 0.75% · cutoff 13h30 UTC pre-NFP', 9), 2400);
+
+  // 4) La coach vérifie les biais
+  setTimeout(() => addActivity('discipline-coach',
+    'Détection biais « FOMO vendredi NFP » · validation cherchée', 9), 3600);
+
+  // 5) Synthèse orchestrateur
+  setTimeout(() => {
+    addActivityEntry('chef',
+      'Synthèse livrée · verdict 🟡 WAIT · attendre lundi sur même structure', 'done');
+    replayBtn.disabled = false;
+    replayBtn.textContent = '▶ REPLAY SÉANCE';
+  }, 13000);
+}
+
+replayBtn.onclick = replaySession;
+window.addActivity = addActivity;
+window.replaySession = replaySession;
+window.addActivityEntry = addActivityEntry;
 
 // ============================================================
 // ANIMATION
