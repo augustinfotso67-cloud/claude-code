@@ -28,21 +28,26 @@ FOTSO COMPANY n'est pas "un EA qui doit performer ce mois-ci". C'est une infrast
 
 ---
 
-## 👥 Équipe — 8 agents spécialisés + DG
+## 👥 Équipe — la VRAIE équipe FOTSO COMPANY
 
-| Rôle technique | Nom interne | Mandat principal |
+L'équipe technique de FOTSO COMPANY est construite autour du président et de ses 8 frères d'arme — des camarades et amis de la vraie vie. Chaque rôle a été attribué selon les forces réelles de chacun, observées durant les années d'études ensemble.
+
+| Rôle technique | Prénom | Bio / contexte |
 |---|---|---|
-| **DG** | **Augustin Fotso** | Vision, gouvernance, arbitrage final |
-| `quant-strategist` | *(à nommer)* | Edge statistique, régime de marché, choix actif |
-| `mql5-developer` | *(à nommer)* | Code MQL5, debug, optimisation EAs |
-| `backtest-auditor` | *(à nommer)* | Audit statistique, verdict DÉPLOYABLE/À REVOIR/INUTILISABLE |
-| `risk-manager` | *(à nommer)* | Sizing, kill switches, capital preservation |
-| `data-scientist` | *(à nommer)* | Pipeline ML, feature engineering, walk-forward |
-| `forward-test-watchman` | *(à nommer)* | Démo vs backtest, score de drift |
-| `discipline-coach` | **Lisa** | Journal, biais, règles d'engagement |
-| `broker-execution-specialist` | *(à nommer)* | Choix broker, exécution, latence, spreads |
+| **Président · DG** | **Augustin Fotso** | Fondateur. Surnommé « président » par la promo depuis la première année. Pilote, arbitre, décide. |
+| `quant-strategist` | **Louis** | Meilleur ami du président. Génie électrique niveau 3 ingénieur. Edge statistique, régime de marché, choix actif. |
+| `mql5-developer` | **Mahamat** | Meilleur ami du président. Génie informatique niveau 3 ingénieur. Code, debug, optimise les EAs. |
+| `backtest-auditor` | **Auréole** | Nouvelle camarade en génie électrique (promo avec Louis, Cabrel et le président). Méfiance par défaut, audit rigoureux. |
+| `risk-manager` | **Fabiany** | As des paris sportifs dans la vraie vie 😅. Génie informatique niveau 3 (promo avec Mahamat et Berios). Sizing, kill switches. |
+| `data-scientist` | **Berios « Docta »** | Fort en mathématiques depuis le niveau 1, surnommé « Docta » par la promo. Génie informatique niveau 3. Pipeline ML, walk-forward. |
+| `forward-test-watchman` | **Aziz** | Surveille la convergence démo/live vs backtest. Détecte les drifts d'exécution. |
+| `discipline-coach` | **Lisa** | Système immunitaire mental de FOTSO COMPANY. Journal, biais, règles d'engagement. |
+| `broker-execution-specialist` | **Cabrel** | Camarade en génie électrique (avec Louis et Auréole). Expert reconnu des brokers — audit, choix, exécution. |
 
-Le DG pilote, les agents exécutent leur mandat. Aucun ne prend de décision en dehors de son périmètre.
+Le **président** pilote, l'équipe exécute son mandat. Aucun ne prend de décision en dehors de son périmètre.
+
+> *« Dans ce groupe depuis la première année ils ont vu en moi quelque chose et du coup me surnomment "président". Je pouvais pas créer un tel écosystème sans les faire intervenir et attribuer à chacun le rôle qu'il mérite. »*
+> — Augustin Fotso, 5 juin 2026
 
 ---
 

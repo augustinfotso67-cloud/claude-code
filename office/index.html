@@ -397,8 +397,8 @@
 
 <div class="header">
   <div class="brand">
-    <h1>Bureau virtuel — <span class="accent">Trading Algo Team</span></h1>
-    <div class="sub">8 vitrines · DG · conférence · cantine · archives · WC</div>
+    <h1>Bureau virtuel — <span class="accent">FOTSO COMPANY</span></h1>
+    <div class="sub">président · 8 collaborateurs · conférence · cantine · archives · WC</div>
   </div>
   <div class="stats"><b id="busy-count">0</b> en mission · <b id="avail-count">0</b> disponibles</div>
 </div>
@@ -486,53 +486,53 @@ function computeInitials(name) {
 const CHEF_DEFAULT = {
   id: 'chef',
   name: 'Augustin Fotso',
-  role: 'Directeur Général',
+  role: 'Président — DG FOTSO COMPANY',
   color: 0xD77757,
   skin: 0x8b6244,
-  background: 'Fondateur de Trading Algo Team. Pilote la stratégie globale, supervise les 8 spécialistes, valide les déploiements et arbitre les décisions critiques.',
+  background: 'Fondateur de FOTSO COMPANY. Surnommé « président » par sa promo depuis la première année. Pilote la stratégie globale, supervise l\'équipe, arbitre les décisions critiques.',
   mandate: 'Vision, gouvernance, allocation des ressources, kill switches finaux. Le DG ne trade pas — il dirige.',
   motto: '« On ne dirige pas un système de trading par l\'émotion. On le dirige par la discipline. »',
   status: 'available', mission: null,
 };
 
 const DEFAULT_AGENTS = [
-  { id: 'quant-strategist',        name: 'Olivier Vasseur',     role: 'Quant Strategist',       color: 0xD77757, skin: 0xe8c5a0,
-    background: 'PhD Polytechnique. 20 ans en hedge funds : 8 ans Renaissance Technologies (Medallion), 5 ans DE Shaw, 7 ans CTA parisien.',
+  { id: 'quant-strategist',        name: 'Louis',               role: 'Quant Strategist',       color: 0xD77757, skin: 0xe8c5a0,
+    background: 'Meilleur ami du président. Génie électrique niveau 3 ingénieur (promo avec Cabrel et Auréole). Identifie les edges statistiques et lit les régimes de marché.',
     mandate: 'Identifie les edges statistiques. Diagnostic de régime de marché. Choix actif/timeframe/session.',
     motto: '« Le marché paie pour assumer un risque qu\'il ne veut pas porter. »',
     status: 'available', mission: null },
-  { id: 'mql5-developer',          name: 'Marc Tournier',       role: 'MQL5 Developer',         color: 0x6da8d7, skin: 0xd9b48c,
-    background: '15 ans MQL. 6 ans chez un broker FX, 9 ans freelance. 200+ EAs livrés, 3 packages CodeBase MQL5 (50k+ downloads).',
+  { id: 'mql5-developer',          name: 'Mahamat',             role: 'MQL5 Developer',         color: 0x6da8d7, skin: 0xd9b48c,
+    background: 'Meilleur ami du président. Génie informatique niveau 3 ingénieur (promo avec Berios et Fabiany). Code, debug et optimise les Expert Advisors MQL5.',
     mandate: 'Écrit, debug et optimise les EAs en MQL5/MQL4. Maîtrise CTrade, CPositionInfo, handles d\'indicateurs.',
     motto: '« Le bug n\'est jamais où tu crois. Lis les logs avant de toucher au code. »',
     status: 'busy', mission: 'Refactor anti-stacking EA XAU v1.5' },
-  { id: 'backtest-auditor',        name: 'Hélène Beaumont',     role: 'Backtest Auditor',       color: 0xa68bc9, skin: 0xe8c5a0,
-    background: 'Master HEC + CFA. 10 ans risk officer BNP Paribas CIB, 5 ans Man AHL, 3 ans consultante family offices.',
+  { id: 'backtest-auditor',        name: 'Auréole',             role: 'Backtest Auditor',       color: 0xa68bc9, skin: 0xe8c5a0,
+    background: 'Camarade en génie électrique avec Louis, Cabrel et le président. Méfiance par défaut, traque l\'over-fitting et les biais.',
     mandate: 'Audit statistique des backtests. Sharpe/Sortino/Calmar/PF. Détecte over-fitting. Verdict DÉPLOYABLE/À REVOIR/INUTILISABLE.',
     motto: '« Tout backtest est un mensonge jusqu\'à preuve du contraire. »',
     status: 'busy', mission: 'Audit backtest XAU GoldVirtuoso 2025' },
-  { id: 'risk-manager',            name: 'Pierre-Louis Cheval', role: 'Risk Manager',           color: 0xc47163, skin: 0xe8c5a0,
-    background: 'Master Risk Management HEC + FRM. 8 ans Winton Capital, 7 ans head of risk family office, 5 ans conseil.',
+  { id: 'risk-manager',            name: 'Fabiany',             role: 'Risk Manager',           color: 0xc47163, skin: 0xe8c5a0,
+    background: 'As des paris sportifs dans la vraie vie. Génie informatique niveau 3 ingénieur (promo avec Mahamat et Berios). Sait calculer le risque comme personne.',
     mandate: 'Position sizing. Limites journalières/hebdo/mensuelles. Stress testing. Kill switches.',
     motto: '« Le premier travail d\'un trader, c\'est de rester dans le jeu. »',
     status: 'available', mission: null },
-  { id: 'data-scientist',          name: 'Yuna Nakamura',       role: 'Data Scientist',         color: 0x5dbab0, skin: 0xf0d4b3,
-    background: 'PhD Berkeley. Ex-Kaggle Grandmaster. 3 ans Alpaca, 5 ans Susquehanna, 4 ans freelance CTAs.',
+  { id: 'data-scientist',          name: 'Berios « Docta »',    role: 'Data Scientist',         color: 0x5dbab0, skin: 0xf0d4b3,
+    background: 'Surnommé « Docta » par la promo dès le niveau 1 pour ses compétences inédites en mathématiques. Génie informatique niveau 3 ingénieur (avec Mahamat et Fabiany).',
     mandate: 'Analyse data-driven sur logs. Feature engineering. ML si justifié. Walk-forward CV, ONNX export.',
     motto: '« Le ML est un marteau. Pas tout n\'est un clou. »',
     status: 'available', mission: null },
-  { id: 'forward-test-watchman',   name: 'Sébastien Reverdy',   role: 'Forward Test Watchman',  color: 0xe0a050, skin: 0xd9b48c,
-    background: '18 ans execution trader. Crédit Agricole CIB, head of execution broker prime Londres, CTA production gap.',
+  { id: 'forward-test-watchman',   name: 'Aziz',                role: 'Forward Test Watchman',  color: 0xe0a050, skin: 0xd9b48c,
+    background: 'Le dernier arrivé dans le groupe — surveille en continu la convergence démo/live vs backtest. Détecte les drifts d\'exécution.',
     mandate: 'Audit hebdomadaire forward test. Compare démo/live vs backtest. Score de drift.',
     motto: '« Le backtest est un fantasme. Le forward test est la vérité. »',
     status: 'busy', mission: 'Drift report semaine 23 — XAU' },
-  { id: 'discipline-coach',        name: 'Aïcha Diop',          role: 'Discipline Coach',       color: 0xd49aa8, skin: 0xa67c52,
-    background: 'Master LSE + DESS Psychologie. 8 ans prop firm trader, 4 ans formatrice, 8 ans psychologue financière.',
+  { id: 'discipline-coach',        name: 'Lisa',                role: 'Discipline Coach',       color: 0xd49aa8, skin: 0xa67c52,
+    background: 'Système immunitaire mental de FOTSO COMPANY. Détecte les biais cognitifs, impose les règles écrites, prépare aux pertes.',
     mandate: 'Tient le journal de trading. Détecte les biais (récence, FOMO, revenge). Impose les règles écrites.',
     motto: '« La technique compte pour 20 %. Le mental compte pour 80 %. »',
     status: 'available', mission: null },
-  { id: 'broker-execution-specialist', name: 'Thomas Reinhardt', role: 'Broker Specialist',     color: 0x5769F7, skin: 0xe8c5a0,
-    background: 'Series 7 + MIFID II. 5 ans sales trader Londres, 4 ans IC Markets, 6 ans consultant indépendant.',
+  { id: 'broker-execution-specialist', name: 'Cabrel',          role: 'Broker Specialist',      color: 0x5769F7, skin: 0xe8c5a0,
+    background: 'Camarade en génie électrique avec Louis, Auréole et le président. Expert reconnu des brokers — audit, choix, exécution.',
     mandate: 'Audit brokers (spreads, commissions, slippage, latence). Mapping stratégie ↔ broker. Setup VPS.',
     motto: '« Tu ne trades pas le marché. Tu trades à travers un broker. »',
     status: 'off', mission: null },
