@@ -2,7 +2,7 @@
 
 > Document de cadrage stratégique
 > Auteur : Augustin Fotso (DG)
-> Version : 0.1 — 5 juin 2026
+> Version : **0.2 — 5 juin 2026 (post-réunion de cadrage)**
 > Statut : Vivant, à itérer
 
 ---
@@ -136,6 +136,57 @@ claude-code/  (workspace global, infrastructure agents)
 | 19 juin (vendredi) | Walk-forward strict validé ou rejeté | backtest-auditor |
 | 26 juin (vendredi) | Démo paper trading 1 semaine | forward-test-watchman |
 | 30 juin | Bilan mensuel + roadmap juillet | DG + Lisa |
+
+---
+
+## 📝 Compte-rendu réunion de cadrage — 5 juin 2026
+
+### Présents
+- **Augustin Fotso** (DG)
+- `quant-strategist` (Specs filtres v6.0)
+- `risk-manager` (Policy v6.0 + Kelly + kill switches)
+- **Lisa** (`discipline-coach` — règles mensuelles + cadre psy)
+
+### Décisions actées (unanimité)
+
+1. **Aucun déploiement réel ce mois-ci.** Juin = mois d'analyse, cadrage, validation. Pas de production.
+2. **L'EA n'est pas mort.** Edge latent identifié : filtre horaire (skip H5,7,10-12,14,16-19) + skip jeudi transforme PF 0.98 → 1.30 sur 1967 trades.
+3. **Hypothèse économique de l'edge** : microstructure des fixings (Shanghai Gold 02:15 UTC, London AM/PM, news US 12:30/14:00 UTC). Jeudi = drainage pré-NFP/CPI.
+4. **Walk-forward obligatoire** avant toute confirmation : Train 2024-01→2025-06 / OOS1 2025-07→2025-12 / OOS2 2026-01→2026-05. Critère accept : PF OOS > 1.15 + DD OOS < 6% + n ≥ 100.
+5. **Risk policy v6.0** : RiskPercent 0.75% (quart-Kelly réduit), Daily DD −3%, Weekly −6%, Mensuel −10% kill switch code-level non désactivable, 5 SL consécutifs = pause 48h.
+6. **5 stress tests obligatoires** avant signature risk-manager : 10 SL consécutifs, gap weekend $300, flash crash −5%/5min, régime change vol×2, Monte Carlo 1000 runs (P95 DD < 15%).
+7. **5 règles mensuelles Lisa** non négociables : cadence 5/2, 1 décision majeure/semaine max, stop si 3 sessions sans avancée OU sommeil dégradé, pas de code après 22h, ZÉRO déploiement réel ce mois.
+
+### Risques identifiés
+- 🚨 **Euphorie post-traumatique** : la découverte de l'edge ce soir arrive trop vite après le verdict dur de l'après-midi. Risque de "12 nouveaux filtres demain matin" pour confirmer.
+- ⚠️ **Curve-fit non détecté** : les filtres ont été identifiés sur les mêmes données qui serviront au backtest. Walk-forward strict obligatoire.
+- ⚠️ **Edge fragile (PF 1.30 marge mince)** : sample 691 trades sur 4.25 ans = IC large.
+
+### Pré-requis pour valider v6.0
+- [ ] Specs quant codées proprement (inputs paramétrables, hypothèse documentée)
+- [ ] Walk-forward Train/OOS1/OOS2 passé avec critères stricts
+- [ ] 5 stress tests risk passés
+- [ ] Lisa valide qu'aucune des 5 règles mensuelles n'a été cassée
+- [ ] backtest-auditor signe le verdict statistique final
+
+---
+
+## 🛠️ Tableau de bord des artefacts produits le 5 juin 2026
+
+| Artefact | Localisation | Statut |
+|---|---|---|
+| Code v5.99 | `trading-project/Fotso-EA/` | 🔒 Gelé (baseline) |
+| Audit code v5.99 | Marc Tournier — branche SELL | ✅ Livré |
+| Backtest 4.25 ans v5.99 sans ML | rapport MT5 + 1967 trades CSV | ✅ Analysé |
+| Audit statistique Hélène | Verdict 🔴 INUTILISABLE EN L'ÉTAT | ✅ Livré |
+| Analyse régime Olivier | "Edge dans contexte, pas dans M15" | ✅ Livré |
+| Cadre psy Lisa (3 règles 72h) | Session après-midi | ✅ Actif |
+| **Analyses A/B/C** | Sous-période / Régime / Heatmap | ✅ Livré |
+| **Découverte filtres** | Heures + jeudi + ADX directional | ✅ Documenté |
+| **Specs v6.0** | Section ci-dessus | ✅ Validé quant |
+| **Risk policy v6.0** | Section ci-dessus | ✅ Validé risk |
+| **Règles mensuelles Lisa** | Section ci-dessus | ✅ Validé discipline |
+| **FOTSO_COMPANY.md** | Repo racine | ✅ v0.2 |
 
 ---
 
