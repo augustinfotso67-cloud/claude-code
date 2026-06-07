@@ -51,6 +51,25 @@ Le **président** pilote, l'équipe exécute son mandat. Aucun ne prend de déci
 
 ---
 
+## ⏰ Deadlines personnelles du président (gravé 6 juin 2026)
+
+Le projet FOTSO COMPANY a démarré en **février 2026**. Le président a fixé deux deadlines explicites qui structurent toutes les décisions :
+
+| Deadline | Date butoir | Critère d'arrêt |
+|---|---|---|
+| **D1 : 6 mois** | **août 2026** | Si pas de **résultats concrets qui encouragent à investir mon propre argent** → pause/pivot du projet |
+| **D2 : 6-24 mois** | **août 2026 → février 2028** | Si ça ne marche pas réellement → **arrêt définitif du trading** (2e tentative dans la vie) |
+
+**Conséquences opérationnelles** :
+- Chaque décision se mesure à l'aune de ces deux échéances
+- Le coût mensuel (abonnement Claude 20 $/mois + temps investi) n'est pas anodin et doit être justifié par la trajectoire
+- À août 2026 : revue critique sans complaisance. Si la trajectoire ne montre pas de signaux objectifs de convergence vers un edge réel → pivot ou pause.
+- À tout moment d'ici là, deux pôles à distinguer mentalement :
+  - **Pôle cashflow immédiat** (XM Weekly Competition, Copy Trading Strategy Provider, prop firms) : exploitation tactique de revenus, séparé du capital FOTSO
+  - **Pôle edge structurel** (EA + méthodologie + équipe + walk-forward) : cœur de mission long terme
+
+---
+
 ## 🗺️ Roadmap juin 2026 — Mois "Convergence"
 
 ### Objectif du mois (validé Augustin)
