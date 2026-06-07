@@ -57,16 +57,33 @@ Le projet FOTSO COMPANY a démarré en **février 2026**. Le président a fixé 
 
 | Deadline | Date butoir | Critère d'arrêt |
 |---|---|---|
-| **D1 : 6 mois** | **août 2026** | Si pas de **résultats concrets qui encouragent à investir mon propre argent** → pause/pivot du projet |
+| **D1 : 6 mois** | **août 2026** | Si pas de **50 $/mois minimum de revenus générés par l'écosystème FOTSO** → pause/pivot du projet |
 | **D2 : 6-24 mois** | **août 2026 → février 2028** | Si ça ne marche pas réellement → **arrêt définitif du trading** (2e tentative dans la vie) |
 
-**Conséquences opérationnelles** :
+### 🎯 Cible D1 cristallisée : **50 $/mois à partir d'août 2026**
+
+Définition opérationnelle : à août 2026, le projet doit générer en moyenne **au moins 50 $/mois** sur juin+juillet (les 2 mois précédents) pour couvrir les charges fixes (abonnement Claude 20 $/mois + frais broker + temps investi). C'est le **ramen profitability** — ni plus, ni moins.
+
+### Leviers de revenue identifiés (par horizon de temps)
+
+**Court terme (juin-août 2026)** :
+1. **Services techniques** : audit de backtests, debug d'EAs, code review MQL5/Python, tutorat. Pricing initial : 20-30 $/mission, à monter à 50-100 $ une fois rodé.
+2. **XM Weekly Competition** : capital fictif → prize cash réel. Variance haute, E[gain] modéré.
+3. **Prop firm challenge** : FTMO ou équivalent, si l'EA v6.0 est validé.
+
+**Moyen terme (sept-déc 2026)** :
+4. **Strategy Provider / Copy Trading** : devenir le copié, pas le copieur. Track record live de 3-6 mois requis. C'est l'aboutissement naturel de la méthodologie FOTSO.
+
+**Long terme (2027+)** :
+5. **SaaS / outils dérivés**, newsletter premium, formations — décrits dans la roadmap.
+
+### Conséquences opérationnelles
 - Chaque décision se mesure à l'aune de ces deux échéances
-- Le coût mensuel (abonnement Claude 20 $/mois + temps investi) n'est pas anodin et doit être justifié par la trajectoire
-- À août 2026 : revue critique sans complaisance. Si la trajectoire ne montre pas de signaux objectifs de convergence vers un edge réel → pivot ou pause.
-- À tout moment d'ici là, deux pôles à distinguer mentalement :
-  - **Pôle cashflow immédiat** (XM Weekly Competition, Copy Trading Strategy Provider, prop firms) : exploitation tactique de revenus, séparé du capital FOTSO
-  - **Pôle edge structurel** (EA + méthodologie + équipe + walk-forward) : cœur de mission long terme
+- Le coût mensuel (Claude 20 $ + temps + broker) doit être justifié par la trajectoire
+- À août 2026 : revue critique sans complaisance. Si la trajectoire ne montre pas de signaux objectifs vers la convergence vers 50 $/mois → pivot ou pause.
+- À tout moment, deux pôles à distinguer mentalement :
+  - **Pôle cashflow immédiat** (services + XM Weekly + prop firms) : revenus court terme, séparés du capital FOTSO
+  - **Pôle edge structurel** (EA + méthodologie + équipe + walk-forward) : cœur de mission, monétisation indirecte via Strategy Provider et produits dérivés à terme
 
 ---
 
