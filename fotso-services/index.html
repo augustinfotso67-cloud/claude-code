@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Augustin Fotso — Audit d'Expert Advisors</title>
+<meta name="description" content="Audit statistique professionnel de vos Expert Advisors MetaTrader. Détection d'overfitting, de curve-fitting et de biais avant tout déploiement de capital.">
+<style>
+  :root {
+    --orange: #D77757;
+    --orange-dark: #c0623f;
+    --ink: #1f1b17;
+    --text: #36302a;
+    --muted: #8a7f73;
+    --bg: #faf6f1;
+    --surface: #ffffff;
+    --border: #e8ddd0;
+    --green: #4f8a5b;
+    --amber: #c08a2e;
+    --red: #b5524a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+  /* Header / hero */
+  header {
+    padding: 80px 0 56px;
+    border-bottom: 1px solid var(--border);
+  }
+  .eyebrow {
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--orange);
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-size: 40px;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    color: var(--ink);
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .lead {
+    font-size: 19px;
+    color: var(--text);
+    max-width: 600px;
+  }
+  .lead strong { color: var(--ink); font-weight: 600; }
+
+  /* Sections */
+  section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+  h2 {
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 28px;
+  }
+  h3 {
+    font-size: 22px;
+    color: var(--ink);
+    font-weight: 650;
+    margin-bottom: 14px;
+    letter-spacing: -0.2px;
+  }
+  p { margin-bottom: 16px; }
+  p:last-child { margin-bottom: 0; }
+
+  /* Problem statement */
+  .problem {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--orange);
+    border-radius: 10px;
+    padding: 28px 30px;
+    font-size: 17px;
+  }
+  .problem strong { color: var(--ink); }
+
+  /* Method list */
+  .method-grid {
+    display: grid;
+    gap: 22px;
+  }
+  .method-item {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+  }
+  .method-num {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    background: var(--orange);
+    color: #fff;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .method-item .body strong { color: var(--ink); display: block; margin-bottom: 3px; font-size: 16px; }
+  .method-item .body span { color: var(--muted); font-size: 15px; }
+
+  /* Deliverable card */
+  .deliverable {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 34px;
+  }
+  .deliverable ul { list-style: none; margin: 18px 0; }
+  .deliverable li {
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    font-size: 16px;
+  }
+  .deliverable li:last-child { border-bottom: none; }
+  .check {
+    color: var(--orange);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .verdicts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+  .verdict {
+    font-size: 13px; font-weight: 600;
+    padding: 5px 12px; border-radius: 20px;
+  }
+  .verdict.green { background: rgba(79,138,91,0.12); color: var(--green); }
+  .verdict.amber { background: rgba(192,138,46,0.12); color: var(--amber); }
+  .verdict.red   { background: rgba(181,82,74,0.12); color: var(--red); }
+
+  /* Pricing */
+  .pricing {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 26px;
+    padding-top: 26px;
+    border-top: 1px solid var(--border);
+  }
+  .price { font-size: 38px; font-weight: 700; color: var(--ink); letter-spacing: -1px; }
+  .price-note { font-size: 14px; color: var(--muted); }
+  .delay-badge {
+    margin-left: auto;
+    background: rgba(215,119,87,0.1);
+    color: var(--orange-dark);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 7px 14px;
+    border-radius: 20px;
+  }
+
+  /* About */
+  .about p { font-size: 16px; }
+  .about .credentials {
+    display: grid;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .cred {
+    display: flex; gap: 12px; align-items: flex-start;
+    font-size: 15px;
+  }
+  .cred .dot { color: var(--orange); font-weight: 700; flex-shrink: 0; }
+
+  /* CTA */
+  .cta {
+    text-align: center;
+    padding: 64px 0 72px;
+    border-bottom: none;
+  }
+  .cta h3 { font-size: 26px; margin-bottom: 10px; }
+  .cta p { color: var(--muted); margin-bottom: 28px; }
+  .btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 14px 26px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary {
+    background: var(--orange);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(215,119,87,0.3);
+  }
+  .btn-primary:hover { background: var(--orange-dark); box-shadow: 0 6px 18px rgba(215,119,87,0.4); }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--orange); }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 36px 0;
+    color: var(--muted);
+    font-size: 13px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+  footer .brand { color: var(--orange); font-weight: 600; }
+
+  @media (max-width: 560px) {
+    h1 { font-size: 32px; }
+    .lead { font-size: 17px; }
+    header { padding: 56px 0 40px; }
+    .delay-badge { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">FOTSO COMPANY · Recherche quantitative</div>
+    <h1>Votre Expert Advisor a-t-il un vrai edge — ou un beau mensonge&nbsp;?</h1>
+    <p class="lead">
+      J'audite votre rapport de backtest MetaTrader et je vous livre un verdict
+      statistique <strong>honnête</strong> : edge réel ou artefact d'optimisation.
+      Avant que vous n'engagiez le moindre capital.
+    </p>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="problem">
+      <p><strong>La majorité des Expert Advisors affichent +200 % en backtest et détruisent
+      le capital en réel.</strong> La cause est presque toujours la même : sur-optimisation,
+      curve-fitting, biais de sélection, ou validation sur une seule fenêtre de marché favorable.</p>
+      <p>Un backtest flatteur n'est pas une preuve. C'est une hypothèse à auditer.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Méthodologie</h2>
+    <div class="method-grid">
+      <div class="method-item">
+        <div class="method-num">1</div>
+        <div class="body">
+          <strong>Métriques rigoureuses</strong>
+          <span>Sharpe, Sortino, Profit Factor, Recovery Factor, corrélation LR de la courbe d'équité, Z-score des séries.</span>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-num">2</div>
+        <div class="body">
+          <strong>Détection d'overfitting</strong>
+          <span>Courbe trop lisse, paramètres sur-précis, effondrement hors échantillon, Sharpe statistiquement suspect.</span>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-num">3</div>
+        <div class="body">
+          <strong>Identification des biais</strong>
+          <span>Look-ahead, survivorship, selection bias, dépendance à un régime de marché unique.</span>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-num">4</div>
+        <div class="body">
+          <strong>Tests de robustesse recommandés</strong>
+          <span>Walk-forward, validation out-of-sample, analyse de sensibilité paramétrique.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Le livrable</h2>
+    <div class="deliverable">
+      <h3>Audit Express Backtest</h3>
+      <p style="color:var(--muted);font-size:15px">
+        Vous m'envoyez votre rapport Strategy Tester (.xlsx ou .htm).
+        Je vous retourne un rapport structuré.
+      </p>
+      <ul>
+        <li><span class="check">✓</span> Notation de la qualité statistique sur 10</li>
+        <li><span class="check">✓</span> Les 5 problèmes prioritaires détectés</li>
+        <li><span class="check">✓</span> 3 recommandations concrètes d'amélioration</li>
+        <li><span class="check">✓</span> Tests de robustesse à mener avant déploiement</li>
+        <li>
+          <span class="check">✓</span>
+          <span>Verdict clair&nbsp;:</span>
+          <span class="verdicts">
+            <span class="verdict green">DÉPLOYABLE</span>
+            <span class="verdict amber">À REVOIR</span>
+            <span class="verdict red">INUTILISABLE</span>
+          </span>
+        </li>
+      </ul>
+      <div class="pricing">
+        <div class="price">25 $</div>
+        <div class="price-note">tarif de lancement</div>
+        <div class="delay-badge">Livraison sous 48 h</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap about">
+    <h2>Qui je suis</h2>
+    <h3>Augustin Fotso</h3>
+    <p>
+      Ingénieur en formation (génie électrique, niveau 3) et fondateur de
+      <strong>FOTSO COMPANY</strong>, une structure de recherche quantitative
+      appliquée aux marchés financiers. Je travaille au sein d'une équipe de
+      huit spécialistes — développement, statistiques, gestion du risque,
+      science des données.
+    </p>
+    <div class="credentials">
+      <div class="cred"><span class="dot">—</span><span>Spécialisé dans l'analyse rigoureuse de rapports Strategy Tester MetaTrader.</span></div>
+      <div class="cred"><span class="dot">—</span><span>Méthodologie issue de la validation institutionnelle&nbsp;: walk-forward, out-of-sample, contrôle de l'overfitting.</span></div>
+      <div class="cred"><span class="dot">—</span><span>Approche transparente&nbsp;: je documente les échecs autant que les réussites. La rigueur statistique avant le marketing.</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="cta wrap">
+  <h3>Auditons votre Expert Advisor</h3>
+  <p>Réponse sous 24 h. Livraison du rapport sous 48 h.</p>
+  <div class="btns">
+    <a class="btn btn-primary" href="https://wa.me/VOTRE_NUMERO" target="_blank" rel="noopener">
+      Démarrer sur WhatsApp
+    </a>
+    <a class="btn btn-secondary" href="mailto:VOTRE_EMAIL">
+      Écrire un email
+    </a>
+  </div>
+</div>
+
+<footer>
+  <span class="brand">FOTSO COMPANY</span> · Recherche quantitative · Audit d'Expert Advisors
+</footer>
+
+</body>
+</html>
