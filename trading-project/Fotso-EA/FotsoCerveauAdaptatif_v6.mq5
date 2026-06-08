@@ -1945,6 +1945,52 @@ double CalculerSLDynamique(ADNMouvement &adn, MiroirInstitutionnel &mi,
   }
 
 //+------------------------------------------------------------------+
+//|   v6.0 — FILTRES DATA-DRIVEN (specs Louis)                      |
+//|   Source : analyse 1967 trades backtest 4.25 ans v5.99.        |
+//+------------------------------------------------------------------+
+
+// v6.0 : lit l'ADX H4 (barre fermee shift 1, fallback shift 0).
+// Reutilise le handle global hADX_H4_brain deja cree en InitIndicateurs
+// (et libere en OnDeinit) — PAS de nouveau handle pour eviter les fuites.
+// Retourne -1.0 si lecture impossible (handle invalide / pas de donnees).
+double ReadADX_H4_v6()
+  {
+   if(hADX_H4_brain == INVALID_HANDLE) return -1.0;
+   double buf[]; ArraySetAsSeries(buf, true);
+   // buffer 0 = ADX principal (MAIN_LINE)
+   if(CopyBuffer(hADX_H4_brain, 0, 1, 1, buf) > 0 && buf[0] > 0.0) return buf[0];
+   if(CopyBuffer(hADX_H4_brain, 0, 0, 1, buf) > 0 && buf[0] > 0.0) return buf[0];
+   return -1.0;
+  }
+
+// v6.0 : filtre horaire + jeudi.
+// true = trade autorise. Master switch InpUseV6Filters bypass tout.
+bool PassTimeFilter()
+  {
+   if(!InpUseV6Filters) return true;
+   MqlDateTime dt; TimeToStruct(TimeCurrent(), dt);
+   // day_of_week MQL5 : 0=Dim, 1=Lun, 2=Mar, 3=Mer, 4=Jeu, 5=Ven, 6=Sam
+   if(InpSkipThursday && dt.day_of_week == 4) return false;  // 4 = Thursday
+   // Recherche exacte de l'heure dans la liste CSV : on entoure de virgules
+   // pour eviter que "2" matche "12" ou "22".
+   string needle = "," + IntegerToString(dt.hour) + ",";
+   string hay    = "," + InpAllowedHours + ",";
+   return (StringFind(hay, needle) >= 0);
+  }
+
+// v6.0 : filtre ADX directionnel (specs Louis).
+//   BUY  : ADX_H4 > InpADX_BuyMin (tendance forte requise pour suivre).
+//   SELL : InpADX_SellMin < ADX_H4 < InpADX_SellMax (zone moyenne, corrections).
+// adxH4 < 0 = lecture KO -> on bloque par securite (pas de trade a l'aveugle).
+bool PassDirectionalFilter(bool isBuy, double adxH4)
+  {
+   if(!InpUseV6Filters) return true;
+   if(adxH4 < 0.0) return false;  // garde-fou : pas de donnee ADX -> pas de trade
+   if(isBuy) return (adxH4 > InpADX_BuyMin);
+   return (adxH4 > InpADX_SellMin && adxH4 < InpADX_SellMax);
+  }
+
+//+------------------------------------------------------------------+
 //|   OUVRIR TRADE + LOG OUVERTURE AVEC RAISON TP/SL               |
 //+------------------------------------------------------------------+
 void OuvrirTrade(bool isBuy, ADNMouvement &adn, MiroirInstitutionnel &mi,
@@ -1953,6 +1999,44 @@ void OuvrirTrade(bool isBuy, ADNMouvement &adn, MiroirInstitutionnel &mi,
    int    idx    = GetPaireIndex();
    bool   isBTC  = (StringFind(Symbol(),"BTC") >= 0);
    bool   isXAU  = (StringFind(Symbol(),"XAU")>=0||StringFind(Symbol(),"GOLD")>=0);
+
+   // ── v6.0 : FILTRES DATA-DRIVEN (point d'insertion UNIQUE) ──────────
+   // Place ici car OuvrirTrade() est le seul goulot d'ouverture : couvre
+   // les 5 chemins d'OnTick (BUY/SELL tendance, pullback BUY/SELL, override DG).
+   // Si l'un des filtres echoue -> on annule le trade (return), avec un Print.
+   if(InpUseV6Filters)
+     {
+      // Filtre 1+2 : heures autorisees + skip jeudi.
+      if(!PassTimeFilter())
+        {
+         etatCerveau = "v6 FILTER: trade bloque (heure/jour hors fenetre data-driven)";
+         Print("v6 FILTER: trade bloque (heure/jour) — ", etatCerveau);
+         return;
+        }
+
+      // Filtre 3 : ADX H4 directionnel (BUY vs SELL).
+      double adxH4_v6 = ReadADX_H4_v6();
+      if(!PassDirectionalFilter(isBuy, adxH4_v6))
+        {
+         etatCerveau = StringFormat("v6 FILTER: trade bloque (ADX H4=%.2f, dir=%s)",
+                                     adxH4_v6, isBuy ? "BUY" : "SELL");
+         Print("v6 FILTER: trade bloque (ADX) — ", etatCerveau);
+         return;
+        }
+
+      // Filtre 4 (optionnel, OFF par defaut) : volatilite ATR H4 plafonnee.
+      if(InpUseVolFilter)
+        {
+         double atrH4_v6 = _ReadATR(PERIOD_H4, 14);  // helper v5.7 existant (handle temporaire libere)
+         if(atrH4_v6 > InpATR_H4_Max)
+           {
+            etatCerveau = StringFormat("v6 FILTER: trade bloque (ATR H4=%.2f > %.2f)",
+                                        atrH4_v6, InpATR_H4_Max);
+            Print("v6 FILTER: trade bloque (vol) — ", etatCerveau);
+            return;
+           }
+        }
+     }
 
    double atrMul = CalculerSLDynamique(adn, mi, psy);
 
