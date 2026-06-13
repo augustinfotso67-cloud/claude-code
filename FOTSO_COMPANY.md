@@ -126,11 +126,13 @@ S2-bonus (12 juin) — TEST INTUITION v5.91 + Regime Gate ✓
 ├── Louis spec, Mahamat code, 4 runs ADX {22, 25, 28}
 └── VERDICT : v5.91 archivee (resultat non-monotone, PF < 1.3 partout)
 
-S3 (13-19 juin) — PIVOT STRATEGIQUE
-├── Demo paper trading v6.0 (Risk 0.75% recommandation Fabiany)
-├── Aziz monitore le drift demo vs backtest
-├── Pole services : audit #2 sur canal Telegram
-└── Cabrel prepare l'inscription Strategy Provider XM
+S3 (13-19 juin) — PIVOT PREPARATION (sans capital risqué)
+├── Brief Strategy Provider XM par Cabrel ✓ (12 juin, voir fotso-services/STRATEGY_PROVIDER_BRIEF_XM.md)
+├── Pole services : audit #2 sur canal Telegram (cible principale de la semaine)
+├── Plan jour par jour : voir fotso-services/WEEK3_PLAN.md
+├── PAS de demo paper avec VPS (decision president : tant que v6.0 ne sera pas
+│   ressentie comme satisfaisante, pas de capital VPS engage)
+└── Option : demo Exness gratuite sur PC perso pour smoke test (pas track record)
 
 S4 (20-30 juin) — BILAN MENSUEL
 ├── Resultats demo paper trading v6.0 (2 semaines)
@@ -138,6 +140,26 @@ S4 (20-30 juin) — BILAN MENSUEL
 ├── Bilan financier juin
 └── Decision juillet : forward test long / Strategy Provider live / pivot
 ```
+
+---
+
+## 🎯 Critère opérationnel "satisfaisant" — proposition Lisa (à valider lundi 15)
+
+Le 13 juin, à la question *« qu'est-ce qui te ferait dire OK le backtest est satisfaisant »*, le président a répondu : *« Je le saurai quand je le verrai »* (option D).
+
+**Risque** : "horizon mobile". Tu améliores → tu vois quelque chose de mieux → tu reportes → tu ne déploies jamais. C'est exactement le piège que Lisa avait nommé le 5 juin (*"overfit émotionnel post-traumatique"*).
+
+**Proposition (Lisa + Cabrel alignés)** : remplacer "backtest satisfaisant" par un critère opérationnel ferme :
+
+> **v6.0 tourne 30-60 jours en live silencieux sur démo Exness gratuit (PC perso, pas VPS), et si DD reste < 7% et Sharpe > 0.5 → le compteur Strategy Provider démarre. Pas avant, pas après.**
+
+Avantages :
+- Coût zéro (démo gratuit + PC perso, pas de VPS)
+- Sortir de l'arbitrage émotionnel
+- Critère factuel et chiffré, non négociable
+- Cabrel confirme : 30-60j de live silencieux = vraie validation, pas un backtest parfait
+
+**À valider explicitement par le président lundi 15 juin.** Si OK, on l'inscrit comme principe non-négociable du projet.
 
 ---
 
