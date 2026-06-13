@@ -93,25 +93,68 @@ Définition opérationnelle : à août 2026, le projet doit générer en moyenne
 > Sur un backtest XAU de 2 ans, **faire converger Win Rate + Profit Factor + Volume de signaux**.
 > Voir ce qui marche, ce qui ne marche pas, et tracer les perspectives futures.
 
-### Cibles mesurables
-| Métrique | Cible | Status (v5.99 baseline) | Status (filtres preview) |
+### Cibles mesurables — RÉVISÉES le 12 juin 2026
+
+Les cibles initiales du README v5.8 (WR ≥ 60%, PF ≥ 1.8, +20%/an) ont été **explicitement réfutées par les données** : ces chiffres combinés simultanément n'existent quasiment pas en trading systématique retail durable. v5.6 (+155%) était de l'overfitting de fenêtre, v5.91 (+7077 $ standalone) était un artefact de mémoire vierge dans un bull parabolique.
+
+**Cibles industrielles RÉALISTES — celles qui guident désormais le projet :**
+
+| Métrique | Cible révisée | v6.0 actuel | Statut |
 |---|---|---|---|
-| WR | ≥ 60% | 39.1% | 45.1% (COMBO3) |
-| Profit Factor | ≥ 1.8 | 0.98 | 1.30 (COMBO1) |
-| Signaux | À calibrer | 463/an | 162-465/an selon filtres |
-| Max DD | ≤ 10% | 16.7% | 3.0–3.9% |
+| **Sharpe net** | > 0.5 | 0.57 IS / **0.88 OOS** | ✅ |
+| **Max DD** | ≤ 10% | 3-5% | ✅✅ |
+| **Profit Factor** | > 1.05 | 1.09 IS / 1.16 OOS | ✅ |
+| **Cohérence IS↔OOS** | OOS ≥ 60% IS | OOS > IS (rare) | ✅ |
+| **Courbe d'équité** | Corr LR > 0.5 | 0.73 et 0.86 | ✅ |
+| Rendement annualisé | 2-5% (réaliste) | ~3%/an | ✅ |
+
+Ces cibles correspondent au profil **Strategy Provider** (la cible de monétisation actée) : DD faible + courbe lisse + edge mince mais réel. Pas de "fonds star à Sharpe 3 soutenu", mais un système copiable durable.
 
 ### Semaines
 
 ```
-S1 (cette semaine) — DIAGNOSTIC
-├── Analyses A, B, C terminées le 5 juin ✓
-├── Identification edges latents (filtre horaire + ADX directional)
-└── Specs v6.0 rédigées par quant-strategist + risk-manager
+S1 (5-7 juin) — DIAGNOSTIC v5.99 ✓
+└── Analyses A/B/C, identification edge latent dans les filtres horaires
 
-S2 — IMPLEMENTATION
-├── Implémenter filtres horaires + ADX/ATR dans v6.0 (mql5-developer)
-├── Re-backtest 2 ans (2024-2026 + 2022-2024 séparément)
+S2 (8-12 juin) — IMPLEMENTATION & VALIDATION v6.0 ✓
+├── Mahamat code les filtres v6.0 ✓
+├── Aureole valide pre-compilation ✓
+├── 4 backtests (IS/OOS x ON/OFF) ✓
+└── Verdict Aureole : v6.0 validee, profil Strategy Provider ✓
+
+S2-bonus (12 juin) — TEST INTUITION v5.91 + Regime Gate ✓
+├── Louis spec, Mahamat code, 4 runs ADX {22, 25, 28}
+└── VERDICT : v5.91 archivee (resultat non-monotone, PF < 1.3 partout)
+
+S3 (13-19 juin) — PIVOT STRATEGIQUE
+├── Demo paper trading v6.0 (Risk 0.75% recommandation Fabiany)
+├── Aziz monitore le drift demo vs backtest
+├── Pole services : audit #2 sur canal Telegram
+└── Cabrel prepare l'inscription Strategy Provider XM
+
+S4 (20-30 juin) — BILAN MENSUEL
+├── Resultats demo paper trading v6.0 (2 semaines)
+├── Nombre de leads / audits payants generes par les services
+├── Bilan financier juin
+└── Decision juillet : forward test long / Strategy Provider live / pivot
+```
+
+---
+
+## 🎯 Pivot stratégique acté le 12 juin 2026
+
+**Cible monétisation principale : Strategy Provider Copy Trading** (pas le capital perso).
+
+Raisonnement consolidé par l'équipe (Cabrel + Auréole + Louis + Lisa) :
+- v6.0 fait ~3%/an sur capital perso : non viable comme revenu personnel
+- Mais profil v6.0 = idéal pour copieurs (DD faible, courbe lisse, Sharpe > 0.5)
+- Économie réaliste : 3000-5000 USD copiés sur ton signal → 50-100 USD/mois de commission perf → atteint D1
+- v6.0 tourne en démo dès cette semaine, le track record commence à courir immédiatement
+
+**Pole services en parallele** : audits Telegram + audit GoldPipMiner publié le 10 juin = premier vrai impact public. Continue à générer de la preuve sociale pour la marque.
+
+---
+
 └── Confirmer convergence sur 2 sous-périodes
 
 S3 — VALIDATION WALK-FORWARD
