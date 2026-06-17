@@ -152,6 +152,73 @@
   .method-item .body strong { color: var(--ink); display: block; margin-bottom: 3px; font-size: 16px; }
   .method-item .body span { color: var(--muted); font-size: 15px; }
 
+  /* Services grid */
+  .services-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .service-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+  .service-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: 0 4px 14px rgba(10, 37, 64, 0.08);
+  }
+  .service-card .tag {
+    display: inline-block;
+    background: var(--navy);
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .service-card .tag.new {
+    background: var(--accent);
+    color: var(--navy);
+  }
+  .service-card h4 {
+    font-size: 17px;
+    color: var(--navy);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .service-card .audience {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .service-card .features {
+    font-size: 13.5px;
+    color: var(--text);
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .service-card .footer-line {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .service-card .price-line {
+    color: var(--navy); font-weight: 700; font-size: 18px;
+  }
+  .service-card .delay-line {
+    color: var(--muted); font-size: 12px;
+  }
+  @media (max-width: 560px) {
+    .services-grid { grid-template-columns: 1fr; }
+  }
+
   /* Deliverable card */
   .deliverable {
     background: var(--surface);
@@ -285,11 +352,11 @@
 <header>
   <div class="wrap">
     <div class="eyebrow">RECHERCHE QUANTITATIVE</div>
-    <h1>Votre Expert Advisor a-t-il un vrai edge — ou un beau mensonge&nbsp;?</h1>
+    <h1>Vos résultats de trading sont-ils un vrai edge — ou un beau mensonge&nbsp;?</h1>
     <p class="lead">
-      J'audite votre rapport de backtest MetaTrader et je vous livre un verdict
-      statistique <strong>honnête</strong> : edge réel ou artefact d'optimisation.
-      Avant que vous n'engagiez le moindre capital.
+      J'audite vos backtests, journaux de trading, signaux et stratégies copy trading.
+      Verdict statistique <strong>honnête</strong> en 48 h : edge réel ou
+      artefact d'optimisation. Avant que vous n'engagiez le moindre capital.
     </p>
   </div>
 </header>
@@ -343,9 +410,82 @@
 
 <section>
   <div class="wrap">
-    <h2>Le livrable</h2>
+    <h2>Les 4 services</h2>
+    <p style="color: var(--muted); font-size: 15px; margin-bottom: 24px; margin-top: -12px;">
+      Une seule méthodologie d'audit statistique appliquée à 4 cibles distinctes.
+      Verdict clair sous 48 h.
+    </p>
+    <div class="services-grid">
+
+      <div class="service-card">
+        <span class="tag">FONDATION</span>
+        <h4>Audit Backtest EA</h4>
+        <div class="audience">Pour développeurs d'Expert Advisors MetaTrader</div>
+        <div class="features">
+          Tu m'envoies ton rapport Strategy Tester (.xlsx/.htm).
+          Je détecte overfitting, curve-fitting, biais de sélection, stacking
+          caché. Verdict statistique honnête.
+        </div>
+        <div class="footer-line">
+          <span class="price-line">25 $</span>
+          <span class="delay-line">Livraison sous 48 h</span>
+        </div>
+      </div>
+
+      <div class="service-card">
+        <span class="tag new">NOUVEAU</span>
+        <h4>Audit Journal de Trading</h4>
+        <div class="audience">Pour traders manuels avec MyFxBook, journal Excel ou export broker</div>
+        <div class="features">
+          As-tu réellement un edge — ou tu survis grâce à un winner exceptionnel ?
+          Test du « retire-tes-5-meilleurs-trades », analyse de séquences,
+          détection de biais comportementaux.
+        </div>
+        <div class="footer-line">
+          <span class="price-line">30 $</span>
+          <span class="delay-line">Livraison sous 48 h</span>
+        </div>
+      </div>
+
+      <div class="service-card">
+        <span class="tag new">NOUVEAU</span>
+        <h4>Audit Service de Signaux</h4>
+        <div class="audience">Pour traders qui paient un abonnement signaux (Telegram, Discord, etc.)</div>
+        <div class="features">
+          Tu m'envoies l'historique des signaux du fournisseur.
+          Je calcule le vrai PnL avec spread/slippage réels, détecte le
+          cherry-picking et les signaux fantômes.
+        </div>
+        <div class="footer-line">
+          <span class="price-line">25 $</span>
+          <span class="delay-line">Livraison sous 48 h</span>
+        </div>
+      </div>
+
+      <div class="service-card">
+        <span class="tag new">NOUVEAU</span>
+        <h4>Audit Stratégie Copy Trading</h4>
+        <div class="audience">Pour traders qui copient un Strategy Provider (XM, ZuluTrade, MQL5)</div>
+        <div class="features">
+          Le track record du provider est-il une chance d'un régime — ou un edge
+          durable ? Stress test multi-période, analyse du DD maximum réel,
+          recommandations de sizing.
+        </div>
+        <div class="footer-line">
+          <span class="price-line">25 $</span>
+          <span class="delay-line">Livraison sous 48 h</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Le livrable (identique pour les 4 services)</h2>
     <div class="deliverable">
-      <h3>Audit Express Backtest</h3>
+      <h3>Rapport d'audit structuré</h3>
       <p style="color:var(--muted);font-size:15px">
         Vous m'envoyez votre rapport Strategy Tester (.xlsx ou .htm).
         Je vous retourne un rapport structuré.
