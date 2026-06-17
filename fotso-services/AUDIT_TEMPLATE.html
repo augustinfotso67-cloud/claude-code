@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<!--
+  TEMPLATE D'AUDIT FOTSO COMPANY — version 2.0 (palette officielle)
+  Adopté le 17 juin 2026 — remplace le template Claude Orange initial.
+
+  USAGE :
+    - Dupliquer ce fichier pour chaque nouvel audit
+    - Remplir les sections marquées {{...}}
+    - Convertir en PDF via weasyprint :
+        weasyprint AUDIT_xxx.html AUDIT_xxx.pdf
+    - Le PDF résultant utilise automatiquement la palette FOTSO
+
+  PALETTE INTÉGRÉE :
+    --navy:     #0a2540  (background sombre, cover, headers)
+    --navy-deep:#06182e  (gradients)
+    --accent:   #facc15  (jaune doré, accents, courbes)
+    --accent-br:#fde047  (accent lumineux)
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FOTSO COMPANY — Audit Report</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 22mm 16mm;
+    @bottom-center {
+      content: "FOTSO COMPANY · QUANT · AUDIT · RESEARCH · Page " counter(page) " / " counter(pages);
+      font-size: 9pt;
+      color: #6b7280;
+      font-family: 'Helvetica', sans-serif;
+    }
+  }
+  :root {
+    --navy: #0a2540;
+    --navy-deep: #06182e;
+    --navy-light: #13304a;
+    --accent: #facc15;
+    --accent-br: #fde047;
+    --ink: #0a2540;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --green: #16a34a;
+    --amber: #d97706;
+    --red: #dc2626;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    color: var(--text);
+    font-size: 10.5pt;
+    line-height: 1.55;
+  }
+
+  /* COVER */
+  .cover {
+    page-break-after: always;
+    text-align: left;
+    padding-top: 25mm;
+  }
+  .cover .brand-bar {
+    height: 5px;
+    background: var(--accent);
+    width: 70mm;
+    margin-bottom: 10mm;
+  }
+  .cover .brand-block {
+    display: table;
+    margin-bottom: 18mm;
+  }
+  .cover .brand-mark {
+    display: table-cell;
+    width: 15mm; height: 15mm;
+    background: var(--navy);
+    color: var(--accent);
+    border-radius: 3mm;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 24pt;
+    font-weight: 800;
+  }
+  .cover .brand-text {
+    display: table-cell;
+    vertical-align: middle;
+    padding-left: 6mm;
+  }
+  .cover .brand-text .name {
+    font-size: 16pt;
+    font-weight: 800;
+    color: var(--navy);
+    letter-spacing: 3pt;
+  }
+  .cover .brand-text .tag {
+    font-size: 8pt;
+    color: var(--muted);
+    letter-spacing: 2pt;
+    margin-top: 1mm;
+  }
+  .cover h1 {
+    font-size: 30pt;
+    line-height: 1.1;
+    color: var(--navy);
+    margin-bottom: 6mm;
+    font-weight: 800;
+  }
+  .cover .subtitle {
+    font-size: 12pt;
+    color: var(--muted);
+    margin-bottom: 18mm;
+  }
+  .cover .meta {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 6mm 0;
+    font-size: 9.5pt;
+  }
+  .cover .meta-row {
+    display: table; width: 100%; margin: 1.5mm 0;
+  }
+  .cover .meta-row .label {
+    display: table-cell;
+    color: var(--muted);
+    width: 38mm;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-size: 8pt;
+    font-weight: 600;
+  }
+  .cover .meta-row .value {
+    display: table-cell;
+    color: var(--navy);
+    font-weight: 700;
+  }
+  .cover .verdict-box {
+    margin-top: 15mm;
+    background: var(--navy);
+    border-left: 5px solid var(--accent);
+    border-radius: 4px;
+    padding: 7mm 9mm;
+  }
+  .cover .verdict-box .label {
+    font-size: 9pt;
+    letter-spacing: 2.5pt;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 3mm;
+  }
+  .cover .verdict-box .verdict {
+    font-size: 22pt;
+    color: #ffffff;
+    font-weight: 800;
+    margin-bottom: 3mm;
+  }
+  .cover .verdict-box .verdict.green { color: #4ade80; }
+  .cover .verdict-box .verdict.amber { color: var(--accent); }
+  .cover .verdict-box .verdict.red   { color: #f87171; }
+  .cover .verdict-box .sub {
+    font-size: 10pt;
+    color: #cbd5e1;
+    line-height: 1.5;
+  }
+
+  /* SECTIONS */
+  .section {
+    page-break-inside: avoid;
+    margin-bottom: 9mm;
+  }
+  h2 {
+    font-size: 10pt;
+    letter-spacing: 2pt;
+    text-transform: uppercase;
+    color: var(--navy);
+    font-weight: 700;
+    margin-bottom: 4mm;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 2mm;
+    display: inline-block;
+  }
+  h3 {
+    font-size: 13pt;
+    color: var(--navy);
+    margin-bottom: 3mm;
+    font-weight: 700;
+  }
+  p { margin-bottom: 3mm; }
+  p:last-child { margin-bottom: 0; }
+
+  /* Metadata table */
+  .meta-table { width: 100%; border-collapse: collapse; margin-top: 2mm; }
+  .meta-table td {
+    padding: 2mm 3mm;
+    border-bottom: 1px solid var(--border);
+    font-size: 10pt;
+  }
+  .meta-table td:first-child { color: var(--muted); width: 55%; }
+  .meta-table td:last-child { text-align: right; color: var(--navy); font-weight: 700; }
+
+  /* Metrics table */
+  .metrics { width: 100%; border-collapse: collapse; margin-top: 2mm; font-size: 9.5pt; }
+  .metrics th {
+    background: var(--navy);
+    color: var(--accent);
+    padding: 2.5mm 3mm;
+    text-align: left;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
+    font-weight: 700;
+  }
+  .metrics th.num    { text-align: right; }
+  .metrics th.center { text-align: center; }
+  .metrics td {
+    padding: 2.5mm 3mm;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .metrics td.num    { text-align: right; font-family: 'Courier New', monospace; font-weight: bold; }
+  .metrics td.center { text-align: center; }
+  .metrics tr.critical td { background: rgba(220, 38, 38, 0.04); }
+
+  .badge {
+    display: inline-block;
+    padding: 1mm 2.5mm;
+    border-radius: 10px;
+    font-size: 8pt;
+    font-weight: 800;
+  }
+  .badge.red    { background: var(--red);   color: white; }
+  .badge.amber  { background: var(--amber); color: white; }
+  .badge.green  { background: var(--green); color: white; }
+  .badge.yellow { background: rgba(250, 204, 21, 0.2); color: #854d0e; border: 1px solid var(--accent); }
+
+  /* Problem block */
+  .problem {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--red);
+    border-radius: 3px;
+    padding: 5mm;
+    margin-bottom: 4mm;
+    page-break-inside: avoid;
+  }
+  .problem.amber { border-left-color: var(--amber); }
+  .problem .title {
+    font-size: 11.5pt;
+    color: var(--navy);
+    font-weight: 800;
+    margin-bottom: 2mm;
+  }
+  .problem .desc { font-size: 10pt; line-height: 1.55; color: var(--text); }
+  .problem .desc strong { color: var(--navy); }
+
+  /* Recommendation block */
+  .reco {
+    background: rgba(250, 204, 21, 0.06);
+    border: 1px solid rgba(250, 204, 21, 0.35);
+    border-left: 4px solid var(--accent);
+    border-radius: 3px;
+    padding: 5mm;
+    margin-bottom: 4mm;
+    page-break-inside: avoid;
+  }
+  .reco .title {
+    font-size: 11.5pt;
+    color: var(--navy);
+    font-weight: 800;
+    margin-bottom: 2mm;
+  }
+  .reco .title::before {
+    content: "→ ";
+    color: var(--accent);
+    font-weight: 900;
+  }
+
+  /* Final verdict box */
+  .final-verdict {
+    background: var(--navy);
+    color: #ffffff;
+    border-radius: 4px;
+    padding: 8mm;
+    margin-top: 6mm;
+    page-break-inside: avoid;
+    border-left: 5px solid var(--accent);
+  }
+  .final-verdict .label {
+    font-size: 9pt;
+    letter-spacing: 2.5pt;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 3mm;
+  }
+  .final-verdict h3 { color: #ffffff; font-size: 16pt; margin-bottom: 4mm; }
+  .final-verdict p { color: #cbd5e1; font-size: 10pt; }
+  .final-verdict strong { color: #ffffff; }
+
+  /* Contact card */
+  .contact {
+    background: var(--accent);
+    color: var(--navy);
+    border-radius: 4px;
+    padding: 8mm;
+    margin-top: 6mm;
+    page-break-inside: avoid;
+  }
+  .contact h3 { color: var(--navy); font-size: 14pt; margin-bottom: 3mm; font-weight: 800; }
+  .contact p { color: var(--navy); font-size: 10pt; }
+  .contact .channels {
+    display: table; width: 100%; margin-top: 4mm;
+  }
+  .contact .channel {
+    display: table-cell;
+    padding: 2mm 0;
+    font-size: 10pt;
+  }
+  .contact .channel .label {
+    font-size: 8pt;
+    letter-spacing: 1.5pt;
+    text-transform: uppercase;
+    opacity: 0.7;
+    display: block;
+    margin-bottom: 1mm;
+    font-weight: 700;
+  }
+  .contact .channel .value { font-weight: 800; }
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<div class="cover">
+  <div class="brand-bar"></div>
+
+  <div class="brand-block">
+    <div class="brand-mark">F</div>
+    <div class="brand-text">
+      <div class="name">FOTSO&nbsp;COMPANY</div>
+      <div class="tag">QUANT · AUDIT · RESEARCH</div>
+    </div>
+  </div>
+
+  <h1>Expert Advisor<br>Statistical Audit Report</h1>
+  <div class="subtitle">{{EA_NAME}} · {{SYMBOL}} · {{TIMEFRAME}} · {{PERIOD}}</div>
+
+  <div class="meta">
+    <div class="meta-row"><div class="label">Report ID</div><div class="value">FOTSO-AUDIT-{{YYYY}}-{{NNN}}</div></div>
+    <div class="meta-row"><div class="label">Date</div><div class="value">{{DATE}}</div></div>
+    <div class="meta-row"><div class="label">Auditor</div><div class="value">Augustin Fotso</div></div>
+    <div class="meta-row"><div class="label">Subject</div><div class="value">{{EA_NAME}}</div></div>
+    <div class="meta-row"><div class="label">Source</div><div class="value">{{SOURCE}}</div></div>
+    <div class="meta-row"><div class="label">Period</div><div class="value">{{PERIOD_FULL}}</div></div>
+    <div class="meta-row"><div class="label">Quality score</div><div class="value">{{SCORE}} / 10</div></div>
+  </div>
+
+  <div class="verdict-box">
+    <div class="label">Final Verdict</div>
+    <div class="verdict {{VERDICT_CLASS}}">{{VERDICT}}</div>
+    <div class="sub">{{VERDICT_SUMMARY}}</div>
+  </div>
+</div>
+
+<!-- ============ 1. METADATA ============ -->
+<div class="section">
+  <h2>1. Backtest Metadata</h2>
+  <table class="meta-table">
+    <tr><td>Symbol</td><td>{{SYMBOL}}</td></tr>
+    <tr><td>Timeframe</td><td>{{TIMEFRAME}}</td></tr>
+    <tr><td>Period</td><td>{{PERIOD_FULL}}</td></tr>
+    <tr><td>Initial deposit</td><td>{{DEPOSIT}}</td></tr>
+    <tr><td>Total trades</td><td>{{N_TRADES}}</td></tr>
+    <tr><td>Architecture observed</td><td>{{ARCHITECTURE}}</td></tr>
+  </table>
+</div>
+
+<!-- ============ 2. METRICS ============ -->
+<div class="section">
+  <h2>2. Statistical Metrics</h2>
+  <table class="metrics">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th class="num">Value</th>
+        <th class="center">Rating</th>
+        <th>Interpretation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Répéter pour chaque métrique :
+      <tr><td>Profit Factor</td><td class="num">X.XX</td><td class="center"><span class="badge red">FAIL</span></td><td>...</td></tr>
+      -->
+    </tbody>
+  </table>
+</div>
+
+<!-- ============ 3. PROBLEMS ============ -->
+<div class="section">
+  <h2>3. Top 5 Issues Detected</h2>
+
+  <div class="problem">
+    <div class="title">🔴 Issue #1 — {{TITLE}}</div>
+    <div class="desc">{{DESC}}</div>
+  </div>
+
+  <!-- ... etc -->
+</div>
+
+<!-- ============ 4. RECOS ============ -->
+<div class="section">
+  <h2>4. Concrete Recommendations</h2>
+
+  <div class="reco">
+    <div class="title">Reco 1 — {{TITLE}}</div>
+    <div class="desc">{{DESC}}</div>
+  </div>
+</div>
+
+<!-- ============ 5. FINAL VERDICT ============ -->
+<div class="section">
+  <div class="final-verdict">
+    <div class="label">Final Verdict</div>
+    <h3>{{RATING}} / 10 — {{HEADLINE}}</h3>
+    <p>{{PARAGRAPH}}</p>
+  </div>
+</div>
+
+<!-- ============ CONTACT ============ -->
+<div class="contact">
+  <h3>Need an audit on your own EA?</h3>
+  <p>Statistical audits of MetaTrader backtests. Honest verdict in 48 hours.</p>
+  <div class="channels">
+    <div class="channel">
+      <span class="label">Website</span>
+      <span class="value">augustinfotso67-cloud.github.io/fotso-audit</span>
+    </div>
+  </div>
+  <div class="channels">
+    <div class="channel">
+      <span class="label">WhatsApp</span>
+      <span class="value">+237 6 56 80 04 46</span>
+    </div>
+    <div class="channel">
+      <span class="label">Email</span>
+      <span class="value">augustin.fotso.quant@gmail.com</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

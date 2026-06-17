@@ -7,17 +7,20 @@
 <meta name="description" content="Audit statistique professionnel de vos Expert Advisors MetaTrader. Détection d'overfitting, de curve-fitting et de biais avant tout déploiement de capital.">
 <style>
   :root {
-    --orange: #D77757;
-    --orange-dark: #c0623f;
-    --ink: #1f1b17;
-    --text: #36302a;
-    --muted: #8a7f73;
-    --bg: #faf6f1;
+    --navy: #0a2540;
+    --navy-deep: #06182e;
+    --navy-light: #13304a;
+    --accent: #facc15;
+    --accent-bright: #fde047;
+    --ink: #0a2540;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --bg: #f8fafc;
     --surface: #ffffff;
-    --border: #e8ddd0;
-    --green: #4f8a5b;
-    --amber: #c08a2e;
-    --red: #b5524a;
+    --border: #e2e8f0;
+    --green: #16a34a;
+    --amber: #d97706;
+    --red: #dc2626;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -30,18 +33,55 @@
   }
   .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
 
+  /* Top bar */
+  .topbar {
+    background: var(--navy);
+    padding: 18px 0;
+  }
+  .topbar-inner {
+    max-width: 760px; margin: 0 auto; padding: 0 24px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .topbar .brand-mark {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    color: var(--navy);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 18px;
+    letter-spacing: -1px;
+  }
+  .topbar .brand-text {
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 3px;
+    font-size: 14px;
+  }
+  .topbar .brand-tag {
+    margin-left: auto;
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+
   /* Header / hero */
   header {
     padding: 80px 0 56px;
     border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
   }
   .eyebrow {
     font-size: 13px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--orange);
-    font-weight: 600;
+    color: var(--navy);
+    font-weight: 700;
     margin-bottom: 18px;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .eyebrow::before {
+    content: ''; width: 24px; height: 2px; background: var(--accent);
   }
   h1 {
     font-size: 40px;
@@ -82,7 +122,7 @@
   .problem {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-left: 3px solid var(--orange);
+    border-left: 3px solid var(--accent);
     border-radius: 10px;
     padding: 28px 30px;
     font-size: 17px;
@@ -102,8 +142,8 @@
   .method-num {
     flex-shrink: 0;
     width: 32px; height: 32px;
-    background: var(--orange);
-    color: #fff;
+    background: var(--navy);
+    color: var(--accent);
     border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
     font-weight: 700;
@@ -128,7 +168,7 @@
   }
   .deliverable li:last-child { border-bottom: none; }
   .check {
-    color: var(--orange);
+    color: var(--accent);
     font-weight: 700;
     flex-shrink: 0;
   }
@@ -155,12 +195,13 @@
   .price-note { font-size: 14px; color: var(--muted); }
   .delay-badge {
     margin-left: auto;
-    background: rgba(215,119,87,0.1);
-    color: var(--orange-dark);
-    font-weight: 600;
+    background: rgba(10, 37, 64, 0.06);
+    color: var(--navy);
+    font-weight: 700;
     font-size: 14px;
     padding: 7px 14px;
     border-radius: 20px;
+    border: 1px solid var(--border);
   }
 
   /* About */
@@ -174,7 +215,7 @@
     display: flex; gap: 12px; align-items: flex-start;
     font-size: 15px;
   }
-  .cred .dot { color: var(--orange); font-weight: 700; flex-shrink: 0; }
+  .cred .dot { color: var(--accent); font-weight: 700; flex-shrink: 0; }
 
   /* CTA */
   .cta {
@@ -196,17 +237,17 @@
   }
   .btn:hover { transform: translateY(-1px); }
   .btn-primary {
-    background: var(--orange);
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(215,119,87,0.3);
+    background: var(--navy);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(10, 37, 64, 0.25);
   }
-  .btn-primary:hover { background: var(--orange-dark); box-shadow: 0 6px 18px rgba(215,119,87,0.4); }
+  .btn-primary:hover { background: var(--navy-deep); box-shadow: 0 6px 18px rgba(10, 37, 64, 0.35); }
   .btn-secondary {
     background: var(--surface);
     color: var(--ink);
     border: 1px solid var(--border);
   }
-  .btn-secondary:hover { border-color: var(--orange); }
+  .btn-secondary:hover { border-color: var(--accent); }
 
   /* Footer */
   footer {
@@ -217,7 +258,11 @@
     background: var(--surface);
     border-top: 1px solid var(--border);
   }
-  footer .brand { color: var(--orange); font-weight: 600; }
+  footer .brand { color: var(--navy); font-weight: 700; letter-spacing: 1.5px; }
+  footer .accent-bar {
+    display: inline-block; width: 18px; height: 2px;
+    background: var(--accent); margin-right: 8px; vertical-align: middle;
+  }
 
   @media (max-width: 560px) {
     h1 { font-size: 32px; }
@@ -229,9 +274,17 @@
 </head>
 <body>
 
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-mark">F</div>
+    <div class="brand-text">FOTSO&nbsp;COMPANY</div>
+    <div class="brand-tag">QUANT · AUDIT · RESEARCH</div>
+  </div>
+</div>
+
 <header>
   <div class="wrap">
-    <div class="eyebrow">FOTSO COMPANY · Recherche quantitative</div>
+    <div class="eyebrow">RECHERCHE QUANTITATIVE</div>
     <h1>Votre Expert Advisor a-t-il un vrai edge — ou un beau mensonge&nbsp;?</h1>
     <p class="lead">
       J'audite votre rapport de backtest MetaTrader et je vous livre un verdict
@@ -344,17 +397,17 @@
   <h3>Auditons votre Expert Advisor</h3>
   <p>Réponse sous 24 h. Livraison du rapport sous 48 h.</p>
   <div class="btns">
-    <a class="btn btn-primary" href="https://wa.me/VOTRE_NUMERO" target="_blank" rel="noopener">
+    <a class="btn btn-primary" href="https://wa.me/237656800446" target="_blank" rel="noopener">
       Démarrer sur WhatsApp
     </a>
-    <a class="btn btn-secondary" href="mailto:VOTRE_EMAIL">
+    <a class="btn btn-secondary" href="mailto:augustin.fotso.quant@gmail.com">
       Écrire un email
     </a>
   </div>
 </div>
 
 <footer>
-  <span class="brand">FOTSO COMPANY</span> · Recherche quantitative · Audit d'Expert Advisors
+  <span class="accent-bar"></span><span class="brand">FOTSO COMPANY</span> · QUANT · AUDIT · RESEARCH · Anti-overfit. Anti-gourou. Données d'abord.
 </footer>
 
 </body>
