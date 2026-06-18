@@ -1,0 +1,37 @@
+﻿Dataset: 549 trades, 23 features
+Hold-out AUC : 0.557
+Hold-out Brier: 0.246
+
+Exported → C:\Users\User\Fotso-EA\ml\brain_v1.onnx
+Size: 395,639 bytes
+
+ONNX output names: ['label', 'probabilities']
+  label: shape=(5,) sample=[1 1 1 1 1]
+  probabilities: shape=(5, 2) sample=[-0.25540957  0.25540957 -0.47338256  0.47338256 -0.40965992]
+Saved meta → brain_v1.meta.json
+
+=== MQL5 feature order ===
+// Build features in this exact order before calling OnnxRun:
+//   [ 0] hour
+//   [ 1] dow
+//   [ 2] month
+//   [ 3] rr_target
+//   [ 4] sl_dist_pct
+//   [ 5] tp_dist_pct
+//   [ 6] atr_h1
+//   [ 7] atr_h4
+//   [ 8] adx_h4
+//   [ 9] ema200_d1_pct
+//   [10] spread_pts
+//   [11] score_buy
+//   [12] score_sell
+//   [13] context_score
+//   [14] risk_mul
+//   [15] psy_peur
+//   [16] psy_cupidite
+//   [17] psy_epuise_vend
+//   [18] psy_epuise_ach
+//   [19] adn_force_explo
+//   [20] mi_cible_inst
+//   [21] dg_buy_susp
+//   [22] dg_sell_ovr

@@ -1,0 +1,2421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Trading Algo Office — Bureau virtuel</title>
+<style>
+  :root {
+    --orange: #D77757;
+    --orange-2: #f0916b;
+    --blue: #5769F7;
+    --bg: #14100c;
+    --bg-2: #1f1814;
+    --surface: #2a1f1a;
+    --surface-2: #3a2a22;
+    --text: #ebdcc8;
+    --text-muted: #8a7c6c;
+    --border: rgba(215, 119, 87, 0.25);
+    --border-strong: rgba(215, 119, 87, 0.5);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow: hidden;
+  }
+  #canvas { display: block; cursor: grab; }
+  #canvas.grabbing { cursor: grabbing; }
+
+  .header {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 18px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 10;
+    background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+    pointer-events: none;
+  }
+  .header .brand { pointer-events: auto; }
+  .header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.3px; }
+  .header h1 .accent { color: var(--orange); }
+  .header .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .header .stats {
+    pointer-events: auto;
+    font-size: 12px; color: var(--text-muted);
+    background: rgba(42, 31, 26, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 8px 14px; border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+  .header .stats b { color: var(--orange); font-weight: 600; }
+
+  .legend {
+    position: absolute;
+    bottom: 24px; left: 24px;
+    background: rgba(42, 31, 26, 0.88);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 11px;
+    z-index: 10;
+    min-width: 170px;
+  }
+  .legend .title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+  .legend .item { display: flex; align-items: center; gap: 10px; margin: 5px 0; }
+  .legend .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.green { background: #6dcc92; box-shadow: 0 0 8px #6dcc92; }
+  .dot.orange { background: #e0a050; box-shadow: 0 0 8px #e0a050; }
+  .dot.red { background: #d96565; box-shadow: 0 0 8px #d96565; }
+  .dot.grey { background: #5a4f47; }
+
+  .panel {
+    position: absolute;
+    top: 70px; right: 24px;
+    width: 400px;
+    max-height: calc(100vh - 110px);
+    background: rgba(31, 24, 20, 0.97);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    overflow: hidden;
+    transform: translateX(120%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 20;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    display: flex; flex-direction: column;
+  }
+  .panel.open { transform: translateX(0); }
+  .panel .panel-head {
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid rgba(215, 119, 87, 0.15);
+    position: relative;
+    background: linear-gradient(180deg, rgba(215,119,87,0.06) 0%, transparent 100%);
+  }
+  .panel .close {
+    position: absolute; top: 16px; right: 18px;
+    background: none; border: none; color: var(--text-muted);
+    font-size: 22px; cursor: pointer; line-height: 1;
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .panel .close:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+  .panel .panel-body {
+    padding: 18px 24px 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .panel .avatar {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 600;
+    color: white;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  }
+  .panel h2 {
+    font-size: 19px; font-weight: 600; margin-bottom: 3px;
+    letter-spacing: -0.2px;
+    outline: none;
+    padding: 2px 6px;
+    margin-left: -6px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .panel h2:focus { background: rgba(215, 119, 87, 0.12); }
+  .panel h2[contenteditable="true"] { cursor: text; border-bottom: 1px dashed var(--orange); }
+  .panel .edit-hint {
+    font-size: 10px; color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .panel .role { color: var(--orange); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; margin-top: 4px; }
+  .panel .section { margin: 16px 0; }
+  .panel .section-title { font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.5px; margin-bottom: 8px; font-weight: 600; }
+  .panel .section-body { font-size: 13px; line-height: 1.6; color: var(--text); }
+  .panel .status-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.05);
+    padding: 6px 12px; border-radius: 20px;
+    font-size: 12px;
+  }
+  .panel .mission {
+    background: rgba(215, 119, 87, 0.1);
+    border-left: 3px solid var(--orange);
+    padding: 12px 14px; border-radius: 6px;
+    font-size: 12px; line-height: 1.5;
+  }
+  .panel .code-chip {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    background: rgba(0,0,0,0.4);
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: var(--orange);
+    border: 1px solid rgba(215, 119, 87, 0.15);
+    display: inline-block;
+  }
+  .panel .btn {
+    width: 100%;
+    margin-top: 10px;
+    background: var(--orange);
+    color: white;
+    border: none;
+    padding: 11px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .panel .btn:hover { background: var(--orange-2); }
+  .panel .btn.ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .panel .btn.ghost:hover { background: rgba(215, 119, 87, 0.08); }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .team-grid .card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .team-grid .card:hover {
+    border-color: var(--border-strong);
+    background: rgba(215, 119, 87, 0.05);
+  }
+  .team-grid .card .name {
+    font-size: 12px; font-weight: 600;
+    outline: none;
+    padding: 1px 4px; margin-left: -4px;
+    border-radius: 3px;
+  }
+  .team-grid .card .name:focus { background: rgba(215, 119, 87, 0.12); border-bottom: 1px dashed var(--orange); }
+  .team-grid .card .role-mini { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .team-grid .card .stat-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 10px; }
+  .team-grid .card .stat-row .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  .hint {
+    position: absolute;
+    bottom: 24px; right: 24px;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: rgba(42, 31, 26, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    line-height: 1.7;
+    max-width: 280px;
+  }
+  .hint b { color: var(--orange); }
+  .hint kbd {
+    background: rgba(255,255,255,0.08);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-family: monospace;
+  }
+
+  .tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: rgba(31, 24, 20, 0.97);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 30;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+  }
+  .tooltip .t-name { font-weight: 600; }
+  .tooltip .t-role { color: var(--orange); font-size: 10px; margin-top: 1px; }
+  .tooltip.show { opacity: 1; }
+
+  .loader {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column; gap: 16px;
+    align-items: center; justify-content: center;
+    background: var(--bg);
+    z-index: 100;
+    transition: opacity 0.5s;
+  }
+  .loader .spin {
+    width: 36px; height: 36px;
+    border: 2px solid var(--surface-2);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  .loader .lbl { font-size: 12px; color: var(--text-muted); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader.hidden { opacity: 0; pointer-events: none; }
+
+  .toast {
+    position: fixed;
+    bottom: 30px; left: 50%;
+    transform: translate(-50%, 30px);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    padding: 10px 18px;
+    border-radius: 24px;
+    font-size: 12px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 40;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* Activity Feed — voir les agents travailler */
+  .activity-feed {
+    position: absolute;
+    top: 70px; left: 24px;
+    width: 330px;
+    max-height: calc(100vh - 250px);
+    background: rgba(31, 24, 20, 0.93);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    z-index: 9;
+    display: flex; flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .activity-feed .feed-head {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(215, 119, 87, 0.15);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .activity-feed .feed-head .title-row { display: flex; align-items: center; gap: 8px; }
+  .activity-feed .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #6dcc92; box-shadow: 0 0 8px #6dcc92;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  .activity-feed .replay-btn {
+    background: var(--orange);
+    color: white;
+    border: none;
+    padding: 5px 11px;
+    border-radius: 14px;
+    font-size: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
+  }
+  .activity-feed .replay-btn:hover { background: var(--orange-2); }
+  .activity-feed .replay-btn:disabled { opacity: 0.5; cursor: wait; }
+  .activity-feed .feed-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 10px;
+  }
+  .activity-feed .entry {
+    padding: 9px 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 11px;
+    line-height: 1.5;
+    display: flex; gap: 9px;
+    animation: slideIn 0.35s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes slideIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+  .activity-feed .entry .time {
+    color: var(--text-muted);
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 10px;
+    white-space: nowrap;
+    margin-top: 1px;
+  }
+  .activity-feed .entry .agent-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .activity-feed .entry .agent-dot.running { animation: pulse 1.2s ease-in-out infinite; }
+  .activity-feed .entry .content { flex: 1; }
+  .activity-feed .entry .agent-name { font-weight: 600; color: var(--text); }
+  .activity-feed .entry .mission {
+    color: var(--text-muted);
+    font-size: 10px;
+    margin-top: 2px;
+    line-height: 1.45;
+  }
+  .activity-feed .entry .status-tag {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-top: 4px;
+    font-weight: 600;
+  }
+  .activity-feed .entry .status-tag.running { color: #e0a050; }
+  .activity-feed .entry .status-tag.done    { color: #6dcc92; }
+  .activity-feed .entry .status-tag.recv    { color: var(--orange); }
+  .activity-feed .empty {
+    padding: 28px 14px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-style: italic;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader">
+  <div class="spin"></div>
+  <div class="lbl">Chargement du bureau...</div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<div class="header">
+  <div class="brand">
+    <h1>Bureau virtuel — <span class="accent">Trading Algo Team</span></h1>
+    <div class="sub">8 vitrines · DG · conférence · cantine · archives · WC</div>
+  </div>
+  <div class="stats"><b id="busy-count">0</b> en mission · <b id="avail-count">0</b> disponibles</div>
+</div>
+
+<div class="legend">
+  <div class="title">Statuts</div>
+  <div class="item"><span class="dot green"></span> Disponible</div>
+  <div class="item"><span class="dot orange"></span> En mission</div>
+  <div class="item"><span class="dot red"></span> Alerte</div>
+  <div class="item"><span class="dot grey"></span> Off-duty</div>
+</div>
+
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <button class="close" id="close-panel">×</button>
+    <div id="panel-head-content"></div>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <div class="t-name"></div>
+  <div class="t-role"></div>
+</div>
+
+<div class="hint">
+  <b>Molette</b> = tourner la pièce (360°)<br>
+  <b>Glisser</b> = orbiter librement · <kbd>Shift</kbd>+molette = zoom<br>
+  <b>Clic</b> agent → fiche · <b>Clic</b> bureau DG → direction<br>
+  <b>Clic</b> archives / conférence / cantine → infos zone
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="activity-feed" id="activity-feed">
+  <div class="feed-head">
+    <div class="title-row"><span class="live-dot"></span><span>Activité live</span></div>
+    <div style="display:flex;gap:6px">
+      <button class="replay-btn" id="demo-btn" title="Simule une journée de travail (équipe en activité continue)" style="background:transparent;color:var(--orange);border:1px solid var(--border-strong)">⚡ DEMO LIVE</button>
+      <button class="replay-btn" id="replay-btn" title="Rejoue la séance d'analyse XAU">▶ REPLAY</button>
+    </div>
+  </div>
+  <div class="feed-body" id="feed-body">
+    <div class="empty">Aucun agent actif.<br>Clique <b>▶ REPLAY SÉANCE</b> pour rejouer l'analyse XAU qu'on vient de faire.</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+if (typeof THREE === 'undefined') {
+  document.write('<script src="https://unpkg.com/three@0.147.0/build/three.min.js"><\/script>');
+  document.write('<script src="https://unpkg.com/three@0.147.0/examples/js/controls/OrbitControls.js"><\/script>');
+}
+</script>
+<script>
+window.addEventListener('load', () => {
+  if (typeof THREE === 'undefined') {
+    document.getElementById('loader').innerHTML =
+      '<div style="text-align:center;color:#ebdcc8;max-width:400px;padding:24px">' +
+      '<h2 style="color:#D77757;margin-bottom:12px">Three.js n\'a pas pu se charger</h2>' +
+      '<p style="font-size:13px;line-height:1.6;color:#8a7c6c">' +
+      'Verifie ta connexion internet ou essaie Chrome / Edge.</p></div>';
+  }
+});
+</script>
+
+<script>
+const OrbitControls = THREE.OrbitControls;
+
+// ============================================================
+// HELPER : initiales auto-calculees a partir du nom
+// ============================================================
+function computeInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+// ============================================================
+// DATA — DG (Augustin Fotso) + 8 agents
+// ============================================================
+const CHEF_DEFAULT = {
+  id: 'chef',
+  name: 'Augustin Fotso',
+  role: 'Directeur Général',
+  color: 0xD77757,
+  skin: 0x8b6244,
+  background: 'Fondateur de Trading Algo Team. Pilote la stratégie globale, supervise les 8 spécialistes, valide les déploiements et arbitre les décisions critiques.',
+  mandate: 'Vision, gouvernance, allocation des ressources, kill switches finaux. Le DG ne trade pas — il dirige.',
+  motto: '« On ne dirige pas un système de trading par l\'émotion. On le dirige par la discipline. »',
+  status: 'available', mission: null,
+};
+
+const DEFAULT_AGENTS = [
+  { id: 'quant-strategist',        name: 'Olivier Vasseur',     role: 'Quant Strategist',       color: 0xD77757, skin: 0xe8c5a0,
+    background: 'PhD Polytechnique. 20 ans en hedge funds : 8 ans Renaissance Technologies (Medallion), 5 ans DE Shaw, 7 ans CTA parisien.',
+    mandate: 'Identifie les edges statistiques. Diagnostic de régime de marché. Choix actif/timeframe/session.',
+    motto: '« Le marché paie pour assumer un risque qu\'il ne veut pas porter. »',
+    status: 'available', mission: null },
+  { id: 'mql5-developer',          name: 'Marc Tournier',       role: 'MQL5 Developer',         color: 0x6da8d7, skin: 0xd9b48c,
+    background: '15 ans MQL. 6 ans chez un broker FX, 9 ans freelance. 200+ EAs livrés, 3 packages CodeBase MQL5 (50k+ downloads).',
+    mandate: 'Écrit, debug et optimise les EAs en MQL5/MQL4. Maîtrise CTrade, CPositionInfo, handles d\'indicateurs.',
+    motto: '« Le bug n\'est jamais où tu crois. Lis les logs avant de toucher au code. »',
+    status: 'busy', mission: 'Refactor anti-stacking EA XAU v1.5' },
+  { id: 'backtest-auditor',        name: 'Hélène Beaumont',     role: 'Backtest Auditor',       color: 0xa68bc9, skin: 0xe8c5a0,
+    background: 'Master HEC + CFA. 10 ans risk officer BNP Paribas CIB, 5 ans Man AHL, 3 ans consultante family offices.',
+    mandate: 'Audit statistique des backtests. Sharpe/Sortino/Calmar/PF. Détecte over-fitting. Verdict DÉPLOYABLE/À REVOIR/INUTILISABLE.',
+    motto: '« Tout backtest est un mensonge jusqu\'à preuve du contraire. »',
+    status: 'busy', mission: 'Audit backtest XAU GoldVirtuoso 2025' },
+  { id: 'risk-manager',            name: 'Pierre-Louis Cheval', role: 'Risk Manager',           color: 0xc47163, skin: 0xe8c5a0,
+    background: 'Master Risk Management HEC + FRM. 8 ans Winton Capital, 7 ans head of risk family office, 5 ans conseil.',
+    mandate: 'Position sizing. Limites journalières/hebdo/mensuelles. Stress testing. Kill switches.',
+    motto: '« Le premier travail d\'un trader, c\'est de rester dans le jeu. »',
+    status: 'available', mission: null },
+  { id: 'data-scientist',          name: 'Yuna Nakamura',       role: 'Data Scientist',         color: 0x5dbab0, skin: 0xf0d4b3,
+    background: 'PhD Berkeley. Ex-Kaggle Grandmaster. 3 ans Alpaca, 5 ans Susquehanna, 4 ans freelance CTAs.',
+    mandate: 'Analyse data-driven sur logs. Feature engineering. ML si justifié. Walk-forward CV, ONNX export.',
+    motto: '« Le ML est un marteau. Pas tout n\'est un clou. »',
+    status: 'available', mission: null },
+  { id: 'forward-test-watchman',   name: 'Sébastien Reverdy',   role: 'Forward Test Watchman',  color: 0xe0a050, skin: 0xd9b48c,
+    background: '18 ans execution trader. Crédit Agricole CIB, head of execution broker prime Londres, CTA production gap.',
+    mandate: 'Audit hebdomadaire forward test. Compare démo/live vs backtest. Score de drift.',
+    motto: '« Le backtest est un fantasme. Le forward test est la vérité. »',
+    status: 'busy', mission: 'Drift report semaine 23 — XAU' },
+  { id: 'discipline-coach',        name: 'Aïcha Diop',          role: 'Discipline Coach',       color: 0xd49aa8, skin: 0xa67c52,
+    background: 'Master LSE + DESS Psychologie. 8 ans prop firm trader, 4 ans formatrice, 8 ans psychologue financière.',
+    mandate: 'Tient le journal de trading. Détecte les biais (récence, FOMO, revenge). Impose les règles écrites.',
+    motto: '« La technique compte pour 20 %. Le mental compte pour 80 %. »',
+    status: 'available', mission: null },
+  { id: 'broker-execution-specialist', name: 'Thomas Reinhardt', role: 'Broker Specialist',     color: 0x5769F7, skin: 0xe8c5a0,
+    background: 'Series 7 + MIFID II. 5 ans sales trader Londres, 4 ans IC Markets, 6 ans consultant indépendant.',
+    mandate: 'Audit brokers (spreads, commissions, slippage, latence). Mapping stratégie ↔ broker. Setup VPS.',
+    motto: '« Tu ne trades pas le marché. Tu trades à travers un broker. »',
+    status: 'off', mission: null },
+];
+
+function loadOverrides() {
+  try { return JSON.parse(localStorage.getItem('trading-office-overrides') || '{}'); } catch { return {}; }
+}
+function saveOverrides(data) { localStorage.setItem('trading-office-overrides', JSON.stringify(data)); }
+const overrides = loadOverrides();
+const CHEF = { ...CHEF_DEFAULT, name: (overrides.chef && overrides.chef.name) || CHEF_DEFAULT.name };
+const AGENTS = DEFAULT_AGENTS.map(a => {
+  const ov = overrides[a.id] || {};
+  return { ...a, name: ov.name || a.name };
+});
+const ALL = [CHEF, ...AGENTS];
+
+const STATUS_COLORS = { available: 0x6dcc92, busy: 0xe0a050, alert: 0xd96565, off: 0x5a4f47 };
+const STATUS_LABEL = {
+  available: { label: 'Disponible', hex: '#6dcc92' },
+  busy: { label: 'En mission', hex: '#e0a050' },
+  alert: { label: 'Alerte', hex: '#d96565' },
+  off: { label: 'Off-duty', hex: '#5a4f47' },
+};
+
+// ============================================================
+// SCENE
+// ============================================================
+const canvas = document.getElementById('canvas');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x14100c);
+scene.fog = new THREE.Fog(0x14100c, 40, 90);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 250);
+camera.position.set(0, 18, 32);
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+
+const controls = new OrbitControls(camera, canvas);
+controls.target.set(0, 2, 0);
+controls.enableDamping = true;
+controls.dampingFactor = 0.07;
+controls.enableZoom = false;
+controls.minDistance = 10;
+controls.maxDistance = 70;
+controls.maxPolarAngle = Math.PI / 2.1;
+controls.minPolarAngle = 0.2;
+
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  if (e.shiftKey) {
+    const dir = new THREE.Vector3().subVectors(camera.position, controls.target);
+    const len = dir.length();
+    const newLen = Math.max(controls.minDistance, Math.min(controls.maxDistance, len * (1 + e.deltaY * 0.001)));
+    dir.setLength(newLen);
+    camera.position.copy(controls.target).add(dir);
+  } else {
+    controls.setAzimuthalAngle(controls.getAzimuthalAngle() + e.deltaY * 0.003);
+  }
+}, { passive: false });
+
+canvas.addEventListener('pointerdown', () => canvas.classList.add('grabbing'));
+canvas.addEventListener('pointerup',   () => canvas.classList.remove('grabbing'));
+
+// ============================================================
+// LIGHTING
+// ============================================================
+scene.add(new THREE.AmbientLight(0xfff0e0, 0.45));
+
+const sun = new THREE.DirectionalLight(0xffd4a8, 0.55);
+sun.position.set(15, 25, 10);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -30;
+sun.shadow.camera.right = 30;
+sun.shadow.camera.top = 30;
+sun.shadow.camera.bottom = -30;
+sun.shadow.bias = -0.0005;
+scene.add(sun);
+
+const chefPendant = new THREE.PointLight(0xffc28a, 1.4, 18, 1.6);
+chefPendant.position.set(0, 7, 0);
+scene.add(chefPendant);
+const pendantList = [chefPendant];
+
+// ============================================================
+// ROOM — etage de bureau RECTANGULAIRE
+// open-space [-13..13, -9..9], conf [-15..15, -16..-9],
+// cantine [-22..-13, -9..9], archives [13..22, -9..9],
+// WC [-6..6, 9..16]
+// ============================================================
+const ROOM = { w: 45, d: 34 }; // 45x34
+
+const woodMat = new THREE.MeshStandardMaterial({ color: 0x3a2a1f, roughness: 0.82 });
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.w, ROOM.d), woodMat);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// Zones de sol contrastees pour identifier les espaces
+function zonePatch(x, z, w, d, color, opacity = 1, y = 0.01) {
+  const m = new THREE.Mesh(
+    new THREE.PlaneGeometry(w, d),
+    new THREE.MeshStandardMaterial({ color, roughness: 0.85, transparent: opacity < 1, opacity })
+  );
+  m.rotation.x = -Math.PI / 2;
+  m.position.set(x, y, z);
+  m.receiveShadow = true;
+  scene.add(m);
+  return m;
+}
+
+// Open-space central — parquet plus clair
+zonePatch(0, 0, 26, 18, 0x4a3528);
+
+// Tapis rond sous le bureau du DG
+const rug = new THREE.Mesh(
+  new THREE.CircleGeometry(4.5, 48),
+  new THREE.MeshStandardMaterial({ color: 0x603e2b, roughness: 0.95 })
+);
+rug.rotation.x = -Math.PI / 2;
+rug.position.y = 0.02;
+rug.receiveShadow = true;
+scene.add(rug);
+
+const rugRing = new THREE.Mesh(
+  new THREE.RingGeometry(4.3, 4.45, 64),
+  new THREE.MeshStandardMaterial({ color: 0xD77757, emissive: 0xD77757, emissiveIntensity: 0.2, roughness: 0.6 })
+);
+rugRing.rotation.x = -Math.PI / 2;
+rugRing.position.y = 0.03;
+scene.add(rugRing);
+
+// Salle de conference au fond — sol bleu-vert sombre
+zonePatch(0, -12.5, 30, 7, 0x2a3540);
+// Cantine a gauche — sol orange tres legerement plus clair
+zonePatch(-17.5, 0, 9, 18, 0x4a3020);
+// Archives a droite — sol gris-bleu froid (effet datacenter)
+zonePatch(17.5, 0, 9, 18, 0x1f242c);
+// WC en bas — sol blanc-bleute
+zonePatch(0, 12.5, 12, 7, 0x4a5560);
+
+// Murs externes (4 plans)
+const wallMat = new THREE.MeshStandardMaterial({ color: 0x2e1f17, roughness: 0.95, side: THREE.DoubleSide });
+function makeWall(w, h, x, y, z, ry = 0) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), wallMat);
+  m.position.set(x, y, z);
+  m.rotation.y = ry;
+  m.receiveShadow = true;
+  scene.add(m);
+  return m;
+}
+const WALL_H = 9;
+makeWall(ROOM.w, WALL_H,  0, WALL_H/2, -ROOM.d/2);                // back
+makeWall(ROOM.w, WALL_H,  0, WALL_H/2,  ROOM.d/2, Math.PI);       // front
+makeWall(ROOM.d, WALL_H, -ROOM.w/2, WALL_H/2, 0, Math.PI/2);      // left
+makeWall(ROOM.d, WALL_H,  ROOM.w/2, WALL_H/2, 0, -Math.PI/2);     // right
+
+// Plafond sombre
+const ceiling = new THREE.Mesh(
+  new THREE.PlaneGeometry(ROOM.w, ROOM.d),
+  new THREE.MeshStandardMaterial({ color: 0x1a1410, roughness: 0.9, side: THREE.BackSide })
+);
+ceiling.rotation.x = -Math.PI / 2;
+ceiling.position.y = WALL_H;
+scene.add(ceiling);
+
+// "Fenetres" lumineuses ambrees sur les murs latéraux
+function makeWindowLight(x, y, z, ry) {
+  const w = new THREE.Mesh(
+    new THREE.PlaneGeometry(3, 4),
+    new THREE.MeshBasicMaterial({ color: 0xffc28a, transparent: true, opacity: 0.65 })
+  );
+  w.position.set(x, y, z); w.rotation.y = ry;
+  scene.add(w);
+  const wl = new THREE.PointLight(0xffc28a, 0.45, 9);
+  wl.position.set(x + Math.cos(ry + Math.PI/2)*0.5, y, z + Math.sin(ry + Math.PI/2)*0.5);
+  scene.add(wl);
+}
+makeWindowLight(-ROOM.w/2 + 0.1, 5, -5, Math.PI/2);
+makeWindowLight(-ROOM.w/2 + 0.1, 5,  5, Math.PI/2);
+makeWindowLight( ROOM.w/2 - 0.1, 5, -5, -Math.PI/2);
+makeWindowLight( ROOM.w/2 - 0.1, 5,  5, -Math.PI/2);
+
+// Enseigne murale au fond de la salle de conference
+function makeWallSign(text, sub, x, y, z, ry, w = 10, h = 2.5) {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 256;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.fillStyle = '#D77757';
+  ctx.font = 'bold 92px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(text, 512, 110);
+  if (sub) {
+    ctx.fillStyle = '#ebdcc8';
+    ctx.font = '32px sans-serif';
+    ctx.fillText(sub, 512, 170);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  const sign = new THREE.Mesh(
+    new THREE.PlaneGeometry(w, h),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true })
+  );
+  sign.position.set(x, y, z); sign.rotation.y = ry;
+  scene.add(sign);
+}
+makeWallSign('TRADING ALGO', '— une équipe systématique —', 0, 7.2, -ROOM.d/2 + 0.15, 0);
+
+// Etiquettes flottantes au sol pour identifier les zones
+function makeZoneLabel(text, x, z) {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.fillStyle = 'rgba(20, 16, 12, 0.78)';
+  roundRect(ctx, 6, 6, 500, 116, 14); ctx.fill();
+  ctx.strokeStyle = '#D77757'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#ebdcc8';
+  ctx.font = 'bold 56px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(text, 256, 78);
+  const tex = new THREE.CanvasTexture(c);
+  const label = new THREE.Mesh(
+    new THREE.PlaneGeometry(3.5, 0.875),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })
+  );
+  label.position.set(x, 4.5, z);
+  scene.add(label);
+  label.userData.billboard = true;
+  return label;
+}
+const zoneLabels = [
+  makeZoneLabel('SALLE DE CONFÉRENCE', 0, -12.5),
+  makeZoneLabel('CANTINE',           -17.5, 0),
+  makeZoneLabel('ARCHIVES',           17.5, 0),
+  makeZoneLabel('WC',                  0, 12.5),
+];
+
+// ============================================================
+// HELPERS
+// ============================================================
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y); ctx.closePath();
+}
+
+function makeScreenCanvas(agent) {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 576;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#0d0a08'; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.fillStyle = '#1a1410'; ctx.fillRect(0, 0, c.width, 40);
+  ['#ff5f56','#ffbd2e','#27c93f'].forEach((col, i) => {
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(20 + i*22, 20, 7, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.fillStyle = '#8a7c6c'; ctx.font = '20px monospace';
+  ctx.fillText(`~/trading/${agent.id}`, 110, 28);
+  const hex = '#' + agent.color.toString(16).padStart(6, '0');
+  ctx.fillStyle = hex; ctx.fillRect(0, 40, c.width, 3);
+  ctx.font = '22px monospace'; ctx.fillStyle = hex;
+  ctx.fillText(`# ${agent.role}`, 30, 92);
+  ctx.fillStyle = '#ebdcc8';
+  ctx.fillText(`$ status: ${agent.status}`, 30, 132);
+  if (agent.mission) {
+    ctx.fillStyle = '#e0a050';
+    ctx.fillText(`▸ mission: ${(agent.mission || '').slice(0, 42)}`, 30, 168);
+  } else {
+    ctx.fillStyle = '#6dcc92';
+    ctx.fillText(`▸ idle, awaiting tasks`, 30, 168);
+  }
+  ctx.fillStyle = '#5a4f47'; ctx.font = '17px monospace';
+  const lines = fakeTerminal(agent);
+  lines.forEach((line, i) => ctx.fillText(line, 30, 222 + i*26));
+  ctx.fillStyle = hex;
+  ctx.fillRect(30, 222 + lines.length*26 + 4, 12, 18);
+  return c;
+}
+function fakeTerminal(agent) {
+  return ({
+    'quant-strategist': ['> diagnostic XAUUSD regime...','  regime: TRENDING_PARABOLIC (0.78)','  edge: scalp pullbacks H1','  WARN: regime shift risk <60d','✓ rapport livre'],
+    'mql5-developer': ['> compiling Gold_v15.mq5...','  fix anti-stacking','  IndicatorRelease() OK','  brace balance: OK','✓ 0 errors, 0 warnings'],
+    'backtest-auditor': ['> parsing report_2024-2025.xlsx','  trades: 487 | WR: 58.2%','  Sharpe: 1.43 | Sortino: 1.91','  Calmar: 2.1 | PF: 1.62','  verdict: A REVOIR'],
+    'risk-manager': ['> sizing audit...','  risk/trade: 0.8% (cap 1%)','  Kelly: 0.04, q-Kelly: 0.01','  daily: -3.5% | mensuel: -12%','  ✓ exposition OK'],
+    'data-scientist': ['> analyze_segments.py','  Fisher p=0.034 (hr 6-7 UTC)','  effect h=0.21 (small)','  WARN: n=87 too small','✗ collect more data'],
+    'forward-test-watchman': ['> drift report week 23...','  WR live: 56.3% (bt 58.2%)','  slip avg: 0.4 pts','  spread bias: +18%','  drift: 23/100 OK'],
+    'discipline-coach': ['> check-in journal...','  rules followed: 96%','  PnL checks: 1.4/day','  ✓ aucun override','  next: prepare 8 SL streak'],
+    'broker-execution-specialist': ['> audit IC vs Pepperstone','  spread XAU: 0.18 vs 0.21','  commission: $3.5 vs $3.5','  latency: 12ms vs 18ms','  rec: IC Markets Raw'],
+  })[agent.id] || [];
+}
+
+function makeNamePlate(agent) {
+  const c = document.createElement('canvas');
+  c.width = 384; c.height = 96;
+  drawPlate(c, agent);
+  const tex = new THREE.CanvasTexture(c);
+  tex.minFilter = THREE.LinearFilter;
+  const plate = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.0, 0.5),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })
+  );
+  plate.userData.canvas = c;
+  plate.userData.texture = tex;
+  return plate;
+}
+function drawPlate(c, agent) {
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.fillStyle = 'rgba(20, 16, 12, 0.94)';
+  roundRect(ctx, 4, 4, 376, 88, 12); ctx.fill();
+  ctx.strokeStyle = '#' + agent.color.toString(16).padStart(6, '0');
+  ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#ebdcc8';
+  ctx.font = 'bold 30px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(agent.name, 192, 44);
+  ctx.fillStyle = '#' + agent.color.toString(16).padStart(6, '0');
+  ctx.font = '18px sans-serif';
+  ctx.fillText(agent.role, 192, 74);
+}
+function rebuildPlate(group) {
+  const { agent, plate } = group.userData;
+  drawPlate(plate.userData.canvas, agent);
+  plate.userData.texture.needsUpdate = true;
+}
+
+// ============================================================
+// AVATAR ASSIS — utilise pour les agents ET le DG
+// Le personnage est en position assise (cuisses horizontales,
+// mollets pendants, tronc redresse, tete + cheveux).
+// origin : (0, 0, 0) = pied de la chaise.
+// fesses ~ y=0.78, tete ~ y=1.7
+// ============================================================
+function makeSeatedAvatar({ color, skin, scale = 1, headOffset = 0 }) {
+  const g = new THREE.Group();
+
+  // Cuisses
+  const thighs = new THREE.Mesh(
+    new THREE.BoxGeometry(0.48 * scale, 0.22 * scale, 0.55 * scale),
+    new THREE.MeshStandardMaterial({ color: 0x1a1a22, roughness: 0.7 })
+  );
+  thighs.position.set(0, 0.78, 0.1 * scale);
+  thighs.castShadow = true;
+  g.add(thighs);
+
+  // Mollets pendants
+  const shinMat = new THREE.MeshStandardMaterial({ color: 0x1a1a22, roughness: 0.7 });
+  for (const sx of [-0.13, 0.13]) {
+    const shin = new THREE.Mesh(new THREE.BoxGeometry(0.16 * scale, 0.5 * scale, 0.16 * scale), shinMat);
+    shin.position.set(sx * scale, 0.45, 0.35 * scale);
+    shin.castShadow = true;
+    g.add(shin);
+    // Chaussures
+    const shoe = new THREE.Mesh(
+      new THREE.BoxGeometry(0.18 * scale, 0.08 * scale, 0.28 * scale),
+      new THREE.MeshStandardMaterial({ color: 0x14100c, roughness: 0.5 })
+    );
+    shoe.position.set(sx * scale, 0.18, 0.42 * scale);
+    g.add(shoe);
+  }
+
+  // Torse
+  const torso = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.28 * scale, 0.4 * scale, 4, 12),
+    new THREE.MeshStandardMaterial({ color, roughness: 0.55 })
+  );
+  torso.position.set(0, 1.22 + headOffset, -0.05 * scale);
+  torso.castShadow = true;
+  g.add(torso);
+
+  // Bras (pendants sur les cotes du torse)
+  const armMat = new THREE.MeshStandardMaterial({ color, roughness: 0.55 });
+  for (const sx of [-1, 1]) {
+    const arm = new THREE.Mesh(
+      new THREE.CapsuleGeometry(0.09 * scale, 0.5 * scale, 4, 8),
+      armMat
+    );
+    arm.position.set(sx * 0.35 * scale, 1.18 + headOffset, 0 * scale);
+    arm.castShadow = true;
+    g.add(arm);
+    // Avant-bras horizontal (mains posees sur le bureau)
+    const forearm = new THREE.Mesh(
+      new THREE.CapsuleGeometry(0.085 * scale, 0.32 * scale, 4, 8),
+      new THREE.MeshStandardMaterial({ color: skin, roughness: 0.65 })
+    );
+    forearm.rotation.x = Math.PI / 2;
+    forearm.position.set(sx * 0.35 * scale, 0.95 + headOffset, 0.2 * scale);
+    g.add(forearm);
+  }
+
+  // Tete
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.22 * scale, 20, 20),
+    new THREE.MeshStandardMaterial({ color: skin, roughness: 0.65 })
+  );
+  head.position.set(0, 1.7 + headOffset, -0.05 * scale);
+  head.castShadow = true;
+  g.add(head);
+
+  // Cheveux (calotte)
+  const hair = new THREE.Mesh(
+    new THREE.SphereGeometry(0.225 * scale, 20, 20, 0, Math.PI * 2, 0, Math.PI / 2.4),
+    new THREE.MeshStandardMaterial({ color: 0x2a1f15, roughness: 0.8 })
+  );
+  hair.position.set(0, 1.71 + headOffset, -0.05 * scale);
+  g.add(hair);
+
+  // "Thinking halo" — sphère lumineuse autour de la tête, invisible par défaut.
+  // Devient visible et pulse quand l'agent est busy (animation gérée dans animate()).
+  const halo = new THREE.Mesh(
+    new THREE.SphereGeometry(0.45 * scale, 24, 24),
+    new THREE.MeshBasicMaterial({
+      color, transparent: true, opacity: 0,
+      side: THREE.BackSide, depthWrite: false,
+    })
+  );
+  halo.position.copy(head.position);
+  g.add(halo);
+
+  // Petite particule "thought bubble" qui orbite quand busy
+  const orbiter = new THREE.Mesh(
+    new THREE.SphereGeometry(0.06 * scale, 12, 12),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0 })
+  );
+  orbiter.position.set(0.45 * scale, 1.85 + headOffset, -0.05 * scale);
+  g.add(orbiter);
+
+  // Sous-groupe "upper" (tete + cheveux + halo + orbiter) pour pouvoir
+  // hocher la tete sans bouger le tronc
+  const headGroup = new THREE.Group();
+  head.position.set(0, 0, 0);
+  hair.position.set(0, 0.01, 0);
+  halo.position.set(0, 0, 0);
+  g.remove(head); g.remove(hair); g.remove(halo);
+  headGroup.add(head); headGroup.add(hair); headGroup.add(halo);
+  headGroup.position.set(0, 1.7 + headOffset, -0.05 * scale);
+  g.add(headGroup);
+
+  return { group: g, torso, head, halo, headGroup, orbiter };
+}
+
+// ============================================================
+// CUBICLE (vitrine) — bureau + 3 parois en verre + porte
+// ============================================================
+const glassMat = new THREE.MeshPhysicalMaterial({
+  color: 0xa8c5e0, transparent: true, opacity: 0.13,
+  roughness: 0.05, metalness: 0, transmission: 0.85,
+  thickness: 0.02, side: THREE.DoubleSide,
+});
+const frameMat = new THREE.MeshStandardMaterial({ color: 0x4a2f20, roughness: 0.5, metalness: 0.3 });
+
+function makeCubicleShell(agent) {
+  const g = new THREE.Group();
+  const W = 4.0, D = 4.0, H = 3.0;
+
+  const cubeFloor = new THREE.Mesh(
+    new THREE.BoxGeometry(W, 0.06, D),
+    new THREE.MeshStandardMaterial({ color: 0x4a3528, roughness: 0.7 })
+  );
+  cubeFloor.position.y = 0.04;
+  cubeFloor.receiveShadow = true;
+  g.add(cubeFloor);
+
+  const edgeMat = new THREE.MeshStandardMaterial({
+    color: 0xD77757, emissive: 0xD77757, emissiveIntensity: 0.15, roughness: 0.6,
+  });
+  const e1 = new THREE.Mesh(new THREE.BoxGeometry(W + 0.04, 0.08, 0.04), edgeMat);
+  e1.position.set(0, 0.05, -D/2); g.add(e1);
+  const e2 = e1.clone(); e2.position.z = D/2; g.add(e2);
+  const e3 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.08, D), edgeMat);
+  e3.position.set(-W/2, 0.05, 0); g.add(e3);
+  const e4 = e3.clone(); e4.position.x = W/2; g.add(e4);
+
+  const wallBack = new THREE.Mesh(new THREE.PlaneGeometry(W, H), glassMat);
+  wallBack.position.set(0, H/2 + 0.07, -D/2);
+  g.add(wallBack);
+  const wallL = new THREE.Mesh(new THREE.PlaneGeometry(D, H), glassMat);
+  wallL.position.set(-W/2, H/2 + 0.07, 0); wallL.rotation.y = Math.PI / 2;
+  g.add(wallL);
+  const wallR = new THREE.Mesh(new THREE.PlaneGeometry(D, H), glassMat);
+  wallR.position.set(W/2, H/2 + 0.07, 0); wallR.rotation.y = -Math.PI / 2;
+  g.add(wallR);
+
+  const beamY = H + 0.1;
+  const b1 = new THREE.Mesh(new THREE.BoxGeometry(W, 0.08, 0.08), frameMat);
+  b1.position.set(0, beamY, -D/2); g.add(b1);
+  const b2 = b1.clone(); b2.position.z = D/2; g.add(b2);
+  const b3 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, D), frameMat);
+  b3.position.set(-W/2, beamY, 0); g.add(b3);
+  const b4 = b3.clone(); b4.position.x = W/2; g.add(b4);
+
+  for (const [px, pz] of [[-W/2,-D/2], [W/2,-D/2], [-W/2,D/2], [W/2,D/2]]) {
+    const post = new THREE.Mesh(new THREE.BoxGeometry(0.1, H + 0.15, 0.1), frameMat);
+    post.position.set(px, H/2 + 0.075, pz);
+    g.add(post);
+  }
+
+  // Pendant lumineux personnel
+  const pCord = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.015, 0.015, 1.5),
+    new THREE.MeshStandardMaterial({ color: 0x1a1410 })
+  );
+  pCord.position.set(0, H - 0.6, 0); g.add(pCord);
+  const pShade = new THREE.Mesh(
+    new THREE.ConeGeometry(0.28, 0.22, 16, 1, true),
+    new THREE.MeshStandardMaterial({
+      color: 0x1a1410, side: THREE.DoubleSide,
+      emissive: agent.color, emissiveIntensity: 0.4,
+    })
+  );
+  pShade.position.set(0, H - 1.35, 0); g.add(pShade);
+  const pBulb = new THREE.PointLight(agent.color, 0.6, 5, 1.8);
+  pBulb.position.set(0, H - 1.5, 0); g.add(pBulb);
+  pendantList.push(pBulb);
+
+  return g;
+}
+
+// ============================================================
+// AGENT SETUP (bureau + chaise + agent assis + LED + nameplate)
+// ============================================================
+const interactables = [];
+const agentMeshes = [];
+
+function makeAgentSetup(agent) {
+  const group = new THREE.Group();
+
+  // Bureau (contre la paroi du fond du cubicule, agent face au centre)
+  const deskTop = new THREE.Mesh(
+    new THREE.BoxGeometry(3.0, 0.1, 1.2),
+    new THREE.MeshStandardMaterial({ color: 0x5a4030, roughness: 0.6, metalness: 0.1 })
+  );
+  deskTop.position.set(0, 1.0, -1.1);
+  deskTop.castShadow = true; deskTop.receiveShadow = true;
+  group.add(deskTop);
+
+  const legMat = new THREE.MeshStandardMaterial({ color: 0x2a1f18, roughness: 0.8 });
+  const legA = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.0, 1.0), legMat);
+  legA.position.set(-1.4, 0.5, -1.1); group.add(legA);
+  const legB = legA.clone(); legB.position.x = 1.4; group.add(legB);
+
+  // Moniteur
+  const monBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.18, 0.22, 0.06),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.5, roughness: 0.4 })
+  );
+  monBase.position.set(0, 1.08, -1.5); group.add(monBase);
+  const monStand = new THREE.Mesh(
+    new THREE.BoxGeometry(0.07, 0.45, 0.07),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.5 })
+  );
+  monStand.position.set(0, 1.4, -1.5); group.add(monStand);
+  const monitor = new THREE.Mesh(
+    new THREE.BoxGeometry(1.9, 1.1, 0.08),
+    new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.4 })
+  );
+  monitor.position.set(0, 1.85, -1.5); monitor.castShadow = true; group.add(monitor);
+
+  const screenCanvas = makeScreenCanvas(agent);
+  const screenTex = new THREE.CanvasTexture(screenCanvas);
+  const screen = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.78, 0.98),
+    new THREE.MeshBasicMaterial({ map: screenTex })
+  );
+  screen.position.set(0, 1.85, -1.45); group.add(screen);
+  interactables.push(screen);
+
+  // Clavier + mug + plante
+  const keyboard = new THREE.Mesh(
+    new THREE.BoxGeometry(1.2, 0.04, 0.32),
+    new THREE.MeshStandardMaterial({ color: 0x1a1a1f, roughness: 0.5 })
+  );
+  keyboard.position.set(0, 1.08, -1.0); group.add(keyboard);
+  const mug = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.1, 0.085, 0.18, 16),
+    new THREE.MeshStandardMaterial({ color: 0xebdcc8, roughness: 0.7 })
+  );
+  mug.position.set(-1.2, 1.16, -0.9); mug.castShadow = true; group.add(mug);
+  const plantPot = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.1, 0.18),
+    new THREE.MeshStandardMaterial({ color: 0x6a4a35 })
+  );
+  plantPot.position.set(1.2, 1.16, -0.9); group.add(plantPot);
+  const plantLeaf = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(0.18, 0),
+    new THREE.MeshStandardMaterial({ color: 0x3a5c3a, flatShading: true })
+  );
+  plantLeaf.position.set(1.2, 1.4, -0.9); group.add(plantLeaf);
+
+  // Chaise pivot — dossier DERRIÈRE l'agent (vers le centre de la pièce),
+  // donc l'agent assis fait face en -z = vers le bureau et son écran.
+  const chairMat = new THREE.MeshStandardMaterial({ color: 0x1f1c20, roughness: 0.5 });
+  const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.1, 0.7), chairMat);
+  chairSeat.position.set(0, 0.62, 0);
+  chairSeat.castShadow = true; chairSeat.receiveShadow = true; group.add(chairSeat);
+  const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.72, 1.0, 0.1), chairMat);
+  chairBack.position.set(0, 1.12, 0.35); chairBack.castShadow = true; group.add(chairBack);
+  const chairPost = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.04, 0.04, 0.5),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+  );
+  chairPost.position.set(0, 0.32, 0); group.add(chairPost);
+  const chairBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.35, 0.35, 0.05),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+  );
+  chairBase.position.set(0, 0.05, 0); group.add(chairBase);
+
+  // ---- Avatar ASSIS face au bureau (rotation Math.PI pour qu'il regarde -z)
+  const avatarBuilt = makeSeatedAvatar({ color: agent.color, skin: agent.skin, scale: 1 });
+  const avatarGroup = avatarBuilt.group;
+  avatarGroup.position.set(0, 0, 0);
+  avatarGroup.rotation.y = Math.PI;   // <- face au bureau (qui est en -z)
+  avatarGroup.visible = agent.status !== 'off';
+  group.add(avatarGroup);
+  interactables.push(avatarBuilt.torso, avatarBuilt.head);
+
+  // LED + light
+  const led = new THREE.Mesh(
+    new THREE.SphereGeometry(0.1, 16, 16),
+    new THREE.MeshBasicMaterial({ color: STATUS_COLORS[agent.status] })
+  );
+  led.position.set(0, 2.6, -0.05); group.add(led);
+  interactables.push(led);
+  const ledLight = new THREE.PointLight(STATUS_COLORS[agent.status], 0.55, 2.2);
+  ledLight.position.copy(led.position); group.add(ledLight);
+
+  // Plaque nominative
+  const plate = makeNamePlate(agent);
+  plate.position.set(0, 2.2, -0.05); group.add(plate);
+  interactables.push(plate);
+
+  group.userData = {
+    agent, led, ledLight, plate, avatarGroup,
+    torso: avatarBuilt.torso, head: avatarBuilt.head,
+    halo: avatarBuilt.halo, headGroup: avatarBuilt.headGroup,
+    orbiter: avatarBuilt.orbiter,
+    screen, screenCanvas
+  };
+  for (const obj of [screen, avatarBuilt.torso, avatarBuilt.head, led, plate]) {
+    obj.userData.agentGroup = group;
+  }
+  agentMeshes.push(group);
+  return group;
+}
+
+// ============================================================
+// DISPOSER les 8 cubicules en cercle (rayon 9)
+// ============================================================
+const CUBICLE_RING_RADIUS = 9.5;
+AGENTS.forEach((agent, i) => {
+  const angle = (i / 8) * Math.PI * 2 + Math.PI / 8;
+  const x = Math.cos(angle) * CUBICLE_RING_RADIUS;
+  const z = Math.sin(angle) * CUBICLE_RING_RADIUS;
+  const cg = new THREE.Group();
+  cg.position.set(x, 0, z);
+  const facing = Math.atan2(-z, -x);
+  cg.rotation.y = facing - Math.PI / 2;
+  cg.add(makeCubicleShell(agent));
+  cg.add(makeAgentSetup(agent));
+  scene.add(cg);
+});
+
+// ============================================================
+// BUREAU DU DG — Augustin Fotso assis dans son fauteuil
+// ============================================================
+let chefMesh = null;
+
+function buildChefDesk() {
+  const g = new THREE.Group();
+
+  const podiumMat = new THREE.MeshStandardMaterial({ color: 0x4a2f20, roughness: 0.7 });
+  const podium = new THREE.Mesh(
+    new THREE.CylinderGeometry(3.2, 3.4, 0.18, 48),
+    podiumMat
+  );
+  podium.position.y = 0.09;
+  podium.receiveShadow = true; podium.castShadow = true;
+  g.add(podium);
+
+  const podiumRing = new THREE.Mesh(
+    new THREE.TorusGeometry(3.25, 0.04, 8, 64),
+    new THREE.MeshStandardMaterial({ color: 0xD77757, emissive: 0xD77757, emissiveIntensity: 0.3 })
+  );
+  podiumRing.rotation.x = Math.PI / 2;
+  podiumRing.position.y = 0.18;
+  g.add(podiumRing);
+
+  const deskMat = new THREE.MeshStandardMaterial({ color: 0x3a2418, roughness: 0.4, metalness: 0.15 });
+  // Plateau (demi-cercle ouvert vers le DG)
+  const deskTop = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.0, 2.0, 0.12, 48, 1, false, -Math.PI/2, Math.PI),
+    deskMat
+  );
+  deskTop.position.y = 1.05;
+  deskTop.castShadow = true;
+  g.add(deskTop);
+
+  // Panneau frontal (cote camera)
+  const deskFront = new THREE.Mesh(
+    new THREE.BoxGeometry(3.8, 0.95, 0.12),
+    deskMat
+  );
+  deskFront.position.set(0, 0.6, 0); deskFront.castShadow = true;
+  g.add(deskFront);
+
+  // Badge DIRECTION
+  const deskBadge = new THREE.Mesh(
+    new THREE.PlaneGeometry(3, 0.4),
+    new THREE.MeshStandardMaterial({ color: 0xD77757, emissive: 0xD77757, emissiveIntensity: 0.2, roughness: 0.5 })
+  );
+  deskBadge.position.set(0, 0.6, 0.07); g.add(deskBadge);
+
+  const badgeCanvas = document.createElement('canvas');
+  badgeCanvas.width = 1024; badgeCanvas.height = 128;
+  const bctx = badgeCanvas.getContext('2d');
+  bctx.clearRect(0, 0, 1024, 128);
+  bctx.fillStyle = '#14100c';
+  bctx.font = 'bold 64px sans-serif';
+  bctx.textAlign = 'center';
+  bctx.fillText('DIRECTION', 512, 80);
+  const badgeTex = new THREE.CanvasTexture(badgeCanvas);
+  const badgeText = new THREE.Mesh(
+    new THREE.PlaneGeometry(3, 0.4),
+    new THREE.MeshBasicMaterial({ map: badgeTex, transparent: true })
+  );
+  badgeText.position.set(0, 0.6, 0.075); g.add(badgeText);
+
+  // Fauteuil "executif"
+  const chairMat = new THREE.MeshStandardMaterial({ color: 0x1a1410, roughness: 0.45, metalness: 0.1 });
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.18, 1.0), chairMat);
+  seat.position.set(0, 0.7, -1.7); seat.castShadow = true; g.add(seat);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.7, 0.2), chairMat);
+  back.position.set(0, 1.65, -2.15); back.castShadow = true; g.add(back);
+  const backTop = new THREE.Mesh(
+    new THREE.BoxGeometry(1.1, 0.18, 0.22),
+    new THREE.MeshStandardMaterial({ color: 0xD77757, roughness: 0.5 })
+  );
+  backTop.position.set(0, 2.45, -2.15); g.add(backTop);
+  // Accoudoirs
+  for (const sx of [-0.7, 0.7]) {
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.4, 0.7), chairMat);
+    arm.position.set(sx, 1.05, -1.7); g.add(arm);
+  }
+  const post = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.07, 0.07, 0.55),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+  );
+  post.position.set(0, 0.4, -1.7); g.add(post);
+  const base = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.55, 0.55, 0.07),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+  );
+  base.position.set(0, 0.18, -1.7); g.add(base);
+
+  // ---- DG ASSIS dans son fauteuil
+  const chefAvatarBuilt = makeSeatedAvatar({ color: CHEF.color, skin: CHEF.skin, scale: 1.08 });
+  chefAvatarBuilt.group.position.set(0, 0.18, -1.7); // au-dessus du podium, au siege
+  g.add(chefAvatarBuilt.group);
+  interactables.push(chefAvatarBuilt.torso, chefAvatarBuilt.head);
+
+  // Plaque du DG (au-dessus de sa tete, billboarded)
+  const chefPlate = makeNamePlate(CHEF);
+  chefPlate.position.set(0, 3.15, -1.7);
+  g.add(chefPlate);
+  interactables.push(chefPlate);
+
+  // LED de statut au-dessus de sa tete
+  const chefLed = new THREE.Mesh(
+    new THREE.SphereGeometry(0.12, 16, 16),
+    new THREE.MeshBasicMaterial({ color: STATUS_COLORS[CHEF.status] })
+  );
+  chefLed.position.set(0, 3.5, -1.7); g.add(chefLed);
+  interactables.push(chefLed);
+  const chefLedLight = new THREE.PointLight(STATUS_COLORS[CHEF.status], 0.7, 2.5);
+  chefLedLight.position.copy(chefLed.position); g.add(chefLedLight);
+
+  // Hologramme tournant au-dessus du bureau
+  const holoMat = new THREE.MeshBasicMaterial({
+    color: 0xD77757, transparent: true, opacity: 0.55, side: THREE.DoubleSide,
+  });
+  const holo = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.6, 32), holoMat);
+  holo.position.set(0, 2.8, 0); g.add(holo);
+  const holo2 = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.38, 32), holoMat);
+  holo2.position.set(0, 2.8, 0); g.add(holo2);
+  const aura = new THREE.PointLight(0xD77757, 0.8, 5, 1.5);
+  aura.position.set(0, 2.6, 0); g.add(aura);
+
+  // Hitbox cliquable (recouvre tout)
+  const hitbox = new THREE.Mesh(
+    new THREE.BoxGeometry(5.5, 4.0, 5.5),
+    new THREE.MeshBasicMaterial({ visible: false })
+  );
+  hitbox.position.set(0, 2.0, -0.8); g.add(hitbox);
+
+  g.userData = {
+    isChef: true, holo, holo2,
+    avatarGroup: chefAvatarBuilt.group,
+    chefTorso: chefAvatarBuilt.torso,
+    chefHead: chefAvatarBuilt.head,
+    chefHalo: chefAvatarBuilt.halo,
+    chefHeadGroup: chefAvatarBuilt.headGroup,
+    chefOrbiter: chefAvatarBuilt.orbiter,
+    plate: chefPlate, led: chefLed, ledLight: chefLedLight,
+  };
+  hitbox.userData.chefGroup = g;
+  chefAvatarBuilt.torso.userData.chefGroup = g;
+  chefAvatarBuilt.head.userData.chefGroup = g;
+  chefPlate.userData.chefGroup = g;
+  chefLed.userData.chefGroup = g;
+  interactables.push(hitbox);
+  return g;
+}
+chefMesh = buildChefDesk();
+scene.add(chefMesh);
+
+// ============================================================
+// SALLE DE CONFÉRENCE — au fond (-z)
+// ============================================================
+function buildConferenceRoom() {
+  const g = new THREE.Group();
+  g.position.set(0, 0, -12.5);
+
+  // Grande table ovale
+  const table = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.0, 2.0, 0.12, 48),
+    new THREE.MeshStandardMaterial({ color: 0x3a2418, roughness: 0.4, metalness: 0.15 })
+  );
+  table.scale.x = 2.0; // ovale
+  table.position.y = 0.85;
+  table.castShadow = true; table.receiveShadow = true;
+  g.add(table);
+  const tablePost = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.18, 0.18, 0.85),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+  );
+  tablePost.position.y = 0.42; g.add(tablePost);
+  const tableBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.7, 0.7, 0.08),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+  );
+  tableBase.position.y = 0.04; g.add(tableBase);
+
+  // 8 chaises autour
+  const chairPositions = [
+    [-3.2, 1.2], [-1.6, 1.5], [0, 1.7], [1.6, 1.5], [3.2, 1.2],
+    [-3.2, -1.2], [-1.6, -1.5], [0, -1.7], [1.6, -1.5], [3.2, -1.2]
+  ];
+  for (const [x, z] of chairPositions) {
+    const cm = new THREE.MeshStandardMaterial({ color: 0x1f1c20, roughness: 0.5 });
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.06, 0.5), cm);
+    seat.position.set(x, 0.55, z); seat.castShadow = true; g.add(seat);
+    const back = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.08), cm);
+    back.position.set(x, 0.85, z + (z > 0 ? 0.21 : -0.21));
+    g.add(back);
+    const leg = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.03, 0.03, 0.5),
+      new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+    );
+    leg.position.set(x, 0.27, z); g.add(leg);
+  }
+
+  // Écran mural géant au fond
+  const screenFrame = new THREE.Mesh(
+    new THREE.BoxGeometry(8, 3.5, 0.15),
+    new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.4 })
+  );
+  screenFrame.position.set(0, 4, -3.2); g.add(screenFrame);
+
+  // Contenu de l'écran (dashboard fictif)
+  const sc = document.createElement('canvas');
+  sc.width = 1600; sc.height = 700;
+  const sctx = sc.getContext('2d');
+  sctx.fillStyle = '#0d0a08'; sctx.fillRect(0, 0, sc.width, sc.height);
+  sctx.fillStyle = '#D77757';
+  sctx.font = 'bold 70px sans-serif';
+  sctx.fillText('DASHBOARD TRADING', 50, 90);
+  sctx.fillStyle = '#ebdcc8';
+  sctx.font = '38px monospace';
+  sctx.fillText('XAU/USD  H1   ●  LIVE', 50, 160);
+  // Graphique fake
+  sctx.strokeStyle = '#6dcc92'; sctx.lineWidth = 4;
+  sctx.beginPath();
+  sctx.moveTo(50, 500);
+  for (let i = 1; i < 100; i++) {
+    const x = 50 + i * 14;
+    const y = 500 - Math.sin(i * 0.18) * 80 - i * 1.4 - Math.random() * 20;
+    sctx.lineTo(x, y);
+  }
+  sctx.stroke();
+  sctx.fillStyle = '#6dcc92'; sctx.font = 'bold 40px monospace';
+  sctx.fillText('PnL: +12.4%', 50, 640);
+  sctx.fillStyle = '#e0a050';
+  sctx.fillText('Sharpe: 1.43', 350, 640);
+  sctx.fillStyle = '#5dbab0';
+  sctx.fillText('WR: 58.2%', 650, 640);
+  sctx.fillStyle = '#d96565';
+  sctx.fillText('DD: -4.1%', 900, 640);
+  const screenTex = new THREE.CanvasTexture(sc);
+  const screen = new THREE.Mesh(
+    new THREE.PlaneGeometry(7.7, 3.3),
+    new THREE.MeshBasicMaterial({ map: screenTex })
+  );
+  screen.position.set(0, 4, -3.12); g.add(screen);
+
+  // Hitbox pour click
+  const hitbox = new THREE.Mesh(
+    new THREE.BoxGeometry(10, 4, 6),
+    new THREE.MeshBasicMaterial({ visible: false })
+  );
+  hitbox.position.set(0, 2, 0); g.add(hitbox);
+  hitbox.userData.zone = 'conference';
+  interactables.push(hitbox);
+
+  return g;
+}
+scene.add(buildConferenceRoom());
+
+// ============================================================
+// CANTINE — a gauche (-x)
+// ============================================================
+function buildKitchen() {
+  const g = new THREE.Group();
+  g.position.set(-17.5, 0, 0);
+
+  // Comptoir bar adosse au mur
+  const counter = new THREE.Mesh(
+    new THREE.BoxGeometry(0.8, 1.0, 6),
+    new THREE.MeshStandardMaterial({ color: 0x4a3528, roughness: 0.6 })
+  );
+  counter.position.set(-3.5, 0.5, 0); counter.castShadow = true; g.add(counter);
+  const counterTop = new THREE.Mesh(
+    new THREE.BoxGeometry(0.85, 0.06, 6.1),
+    new THREE.MeshStandardMaterial({ color: 0xD77757, emissive: 0xD77757, emissiveIntensity: 0.1, roughness: 0.5 })
+  );
+  counterTop.position.set(-3.5, 1.03, 0); g.add(counterTop);
+
+  // Frigo
+  const fridge = new THREE.Mesh(
+    new THREE.BoxGeometry(0.8, 2.2, 1.0),
+    new THREE.MeshStandardMaterial({ color: 0xc8c8d4, roughness: 0.5, metalness: 0.3 })
+  );
+  fridge.position.set(-3.6, 1.1, -3.5); fridge.castShadow = true; g.add(fridge);
+  // Poignee frigo
+  const fridgeHandle = new THREE.Mesh(
+    new THREE.BoxGeometry(0.05, 0.6, 0.05),
+    new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+  );
+  fridgeHandle.position.set(-3.15, 1.5, -3.5); g.add(fridgeHandle);
+
+  // Machine a cafe
+  const coffeeMaker = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.55, 0.4),
+    new THREE.MeshStandardMaterial({ color: 0x1a1410, roughness: 0.5 })
+  );
+  coffeeMaker.position.set(-3.5, 1.33, 2.5); g.add(coffeeMaker);
+  // LED rouge
+  const coffeeLed = new THREE.Mesh(
+    new THREE.SphereGeometry(0.04),
+    new THREE.MeshBasicMaterial({ color: 0xd96565 })
+  );
+  coffeeLed.position.set(-3.3, 1.5, 2.7); g.add(coffeeLed);
+
+  // 2 tables rondes avec chaises
+  for (const tz of [-3, 3]) {
+    const ttop = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.9, 0.9, 0.06, 32),
+      new THREE.MeshStandardMaterial({ color: 0x5a4030, roughness: 0.6 })
+    );
+    ttop.position.set(1, 0.85, tz); ttop.castShadow = true; g.add(ttop);
+    const tleg = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.06, 0.1, 0.85),
+      new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+    );
+    tleg.position.set(1, 0.42, tz); g.add(tleg);
+    // 4 chaises autour
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+      const cx = 1 + Math.cos(a) * 1.5;
+      const cz = tz + Math.sin(a) * 1.5;
+      const cm = new THREE.MeshStandardMaterial({ color: 0x2a3540, roughness: 0.6 });
+      const seat = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.06, 16), cm);
+      seat.position.set(cx, 0.5, cz); g.add(seat);
+      const leg = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.03, 0.03, 0.45),
+        new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.6 })
+      );
+      leg.position.set(cx, 0.25, cz); g.add(leg);
+    }
+  }
+
+  // Suspensions au-dessus des tables
+  for (const tz of [-3, 3]) {
+    const cord = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.012, 0.012, 1.6),
+      new THREE.MeshStandardMaterial({ color: 0x1a1410 })
+    );
+    cord.position.set(1, 6.5, tz); g.add(cord);
+    const shade = new THREE.Mesh(
+      new THREE.SphereGeometry(0.28, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+      new THREE.MeshStandardMaterial({ color: 0x1a1410, side: THREE.DoubleSide, emissive: 0xffc28a, emissiveIntensity: 0.45 })
+    );
+    shade.position.set(1, 5.65, tz); g.add(shade);
+    const bulb = new THREE.PointLight(0xffc28a, 0.7, 6);
+    bulb.position.set(1, 5.5, tz); g.add(bulb);
+    pendantList.push(bulb);
+  }
+
+  // Hitbox
+  const hitbox = new THREE.Mesh(
+    new THREE.BoxGeometry(8, 4, 16),
+    new THREE.MeshBasicMaterial({ visible: false })
+  );
+  hitbox.position.set(0, 2, 0); g.add(hitbox);
+  hitbox.userData.zone = 'kitchen';
+  interactables.push(hitbox);
+
+  return g;
+}
+scene.add(buildKitchen());
+
+// ============================================================
+// ARCHIVES DE DONNÉES — a droite (+x)
+// Rangees d'etageres-serveurs + console centrale, ambiance datacenter
+// ============================================================
+function buildArchives() {
+  const g = new THREE.Group();
+  g.position.set(17.5, 0, 0);
+  const archiveLeds = [];
+
+  // 4 rangees d'etageres-serveurs
+  for (const tz of [-6, -2.5, 2.5, 6]) {
+    // Rack principal
+    const rack = new THREE.Mesh(
+      new THREE.BoxGeometry(0.7, 3.5, 2.5),
+      new THREE.MeshStandardMaterial({ color: 0x1a1f28, roughness: 0.5, metalness: 0.4 })
+    );
+    rack.position.set(-1.5, 1.75, tz);
+    rack.castShadow = true; g.add(rack);
+    // Liseré du dessus
+    const rackTop = new THREE.Mesh(
+      new THREE.BoxGeometry(0.72, 0.04, 2.52),
+      new THREE.MeshStandardMaterial({ color: 0x5dbab0, emissive: 0x5dbab0, emissiveIntensity: 0.3 })
+    );
+    rackTop.position.set(-1.5, 3.51, tz); g.add(rackTop);
+
+    // LEDs vertes/orange clignotantes sur le front du rack
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 3; col++) {
+        const isGreen = Math.random() > 0.25;
+        const led = new THREE.Mesh(
+          new THREE.SphereGeometry(0.04, 8, 8),
+          new THREE.MeshBasicMaterial({ color: isGreen ? 0x6dcc92 : 0xe0a050 })
+        );
+        led.position.set(-1.15, 3.0 - row * 0.35, tz - 0.8 + col * 0.8);
+        g.add(led);
+        archiveLeds.push({ mesh: led, phase: Math.random() * Math.PI * 2, kind: isGreen ? 'g' : 'o' });
+      }
+    }
+
+    // Petite poignée latérale
+    const handle = new THREE.Mesh(
+      new THREE.BoxGeometry(0.03, 0.5, 0.04),
+      new THREE.MeshStandardMaterial({ color: 0x14100c, metalness: 0.7 })
+    );
+    handle.position.set(-1.16, 1.7, tz); g.add(handle);
+  }
+
+  // Console centrale (terminal d'archive)
+  const console1 = new THREE.Mesh(
+    new THREE.BoxGeometry(2.2, 0.9, 1.0),
+    new THREE.MeshStandardMaterial({ color: 0x2a2f38, roughness: 0.6 })
+  );
+  console1.position.set(2.0, 0.45, 0); console1.castShadow = true; g.add(console1);
+  // Ecran de la console
+  const consoleScreen = document.createElement('canvas');
+  consoleScreen.width = 800; consoleScreen.height = 400;
+  const ksx = consoleScreen.getContext('2d');
+  ksx.fillStyle = '#0a0d12'; ksx.fillRect(0, 0, 800, 400);
+  ksx.fillStyle = '#5dbab0';
+  ksx.font = 'bold 32px monospace';
+  ksx.fillText('═══ DATA ARCHIVES ═══', 50, 60);
+  ksx.fillStyle = '#ebdcc8';
+  ksx.font = '22px monospace';
+  ksx.fillText('▸ historical/  ............  248 GB', 50, 120);
+  ksx.fillText('▸ backtests/   ............   42 GB', 50, 155);
+  ksx.fillText('▸ live-logs/   ............   17 GB', 50, 190);
+  ksx.fillText('▸ tick-data/   ............  982 GB', 50, 225);
+  ksx.fillText('▸ models/      ............    8 GB', 50, 260);
+  ksx.fillStyle = '#6dcc92';
+  ksx.fillText('● 4 racks online · 99.8% uptime', 50, 330);
+  ksx.fillStyle = '#5dbab0';
+  ksx.fillRect(50, 360, 10, 16); // cursor
+  const consoleTex = new THREE.CanvasTexture(consoleScreen);
+  const consoleDisplay = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.6, 0.8),
+    new THREE.MeshBasicMaterial({ map: consoleTex })
+  );
+  consoleDisplay.position.set(2.0, 1.0, 0.51);
+  consoleDisplay.rotation.x = -0.3;
+  g.add(consoleDisplay);
+
+  // Lumiere d'ambiance froide
+  const cyanLight = new THREE.PointLight(0x5dbab0, 0.5, 12);
+  cyanLight.position.set(0, 5, 0); g.add(cyanLight);
+  const cyanLight2 = new THREE.PointLight(0x5dbab0, 0.4, 10);
+  cyanLight2.position.set(0, 5, -6); g.add(cyanLight2);
+  const cyanLight3 = new THREE.PointLight(0x5dbab0, 0.4, 10);
+  cyanLight3.position.set(0, 5, 6); g.add(cyanLight3);
+
+  // Hitbox
+  const hitbox = new THREE.Mesh(
+    new THREE.BoxGeometry(8, 4, 16),
+    new THREE.MeshBasicMaterial({ visible: false })
+  );
+  hitbox.position.set(0, 2, 0); g.add(hitbox);
+  hitbox.userData.zone = 'archives';
+  interactables.push(hitbox);
+
+  g.userData.leds = archiveLeds;
+  return g;
+}
+const archivesMesh = buildArchives();
+scene.add(archivesMesh);
+
+// ============================================================
+// TOILETTES — au sud (+z)
+// ============================================================
+function buildToilet() {
+  const g = new THREE.Group();
+  g.position.set(0, 0, 12.5);
+
+  // Mur de séparation avec porte (simplifie : 2 panneaux)
+  const wallM = new THREE.MeshStandardMaterial({ color: 0x3a4550, roughness: 0.8 });
+  const panelL = new THREE.Mesh(new THREE.BoxGeometry(4, 2.5, 0.15), wallM);
+  panelL.position.set(-4, 1.25, -2); g.add(panelL);
+  const panelR = new THREE.Mesh(new THREE.BoxGeometry(4, 2.5, 0.15), wallM);
+  panelR.position.set(4, 1.25, -2); g.add(panelR);
+  // Porte
+  const door = new THREE.Mesh(
+    new THREE.BoxGeometry(1.5, 2.5, 0.08),
+    new THREE.MeshStandardMaterial({ color: 0x6a4a35, roughness: 0.6 })
+  );
+  door.position.set(0, 1.25, -2); g.add(door);
+  // Poignee
+  const doorKnob = new THREE.Mesh(
+    new THREE.SphereGeometry(0.07),
+    new THREE.MeshStandardMaterial({ color: 0xD77757, metalness: 0.8, roughness: 0.3 })
+  );
+  doorKnob.position.set(0.55, 1.25, -1.95); g.add(doorKnob);
+
+  // Pictogramme H/F au-dessus de la porte
+  const pic = document.createElement('canvas');
+  pic.width = 256; pic.height = 128;
+  const pctx = pic.getContext('2d');
+  pctx.clearRect(0, 0, 256, 128);
+  pctx.fillStyle = '#ebdcc8';
+  pctx.font = 'bold 90px sans-serif';
+  pctx.textAlign = 'center';
+  pctx.fillText('🚻', 128, 90);
+  const picTex = new THREE.CanvasTexture(pic);
+  const picMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.8, 0.4),
+    new THREE.MeshBasicMaterial({ map: picTex, transparent: true })
+  );
+  picMesh.position.set(0, 2.8, -1.94); g.add(picMesh);
+
+  // Petit lavabo visible
+  const sink = new THREE.Mesh(
+    new THREE.BoxGeometry(1.0, 0.15, 0.5),
+    new THREE.MeshStandardMaterial({ color: 0xebdcc8, roughness: 0.4 })
+  );
+  sink.position.set(-2, 1.0, 1.5); g.add(sink);
+  const sinkLeg = new THREE.Mesh(
+    new THREE.BoxGeometry(1.0, 1.0, 0.5),
+    new THREE.MeshStandardMaterial({ color: 0xc4b8a4, roughness: 0.6 })
+  );
+  sinkLeg.position.set(-2, 0.5, 1.5); g.add(sinkLeg);
+  // Miroir au-dessus
+  const mirror = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.0, 1.0),
+    new THREE.MeshStandardMaterial({ color: 0x8aaacc, metalness: 0.9, roughness: 0.1 })
+  );
+  mirror.position.set(-2, 2.0, 1.95);
+  mirror.rotation.y = 0;
+  g.add(mirror);
+
+  // Hitbox
+  const hitbox = new THREE.Mesh(
+    new THREE.BoxGeometry(12, 3, 6),
+    new THREE.MeshBasicMaterial({ visible: false })
+  );
+  hitbox.position.set(0, 1.5, 0); g.add(hitbox);
+  hitbox.userData.zone = 'toilet';
+  interactables.push(hitbox);
+
+  return g;
+}
+scene.add(buildToilet());
+
+// ============================================================
+// RAYCASTER
+// ============================================================
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+const tooltip = document.getElementById('tooltip');
+
+function getHit(event) {
+  const rect = canvas.getBoundingClientRect();
+  pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(interactables, false);
+  if (hits.length > 0) {
+    const obj = hits[0].object;
+    if (obj.userData.chefGroup) return { type: 'chef' };
+    if (obj.userData.agentGroup) return { type: 'agent', group: obj.userData.agentGroup };
+    if (obj.userData.zone)       return { type: 'zone', zone: obj.userData.zone };
+  }
+  return null;
+}
+
+canvas.addEventListener('mousemove', (e) => {
+  const hit = getHit(e);
+  if (hit) {
+    canvas.style.cursor = 'pointer';
+    if (hit.type === 'agent') {
+      tooltip.querySelector('.t-name').textContent = hit.group.userData.agent.name;
+      tooltip.querySelector('.t-role').textContent = hit.group.userData.agent.role;
+    } else if (hit.type === 'chef') {
+      tooltip.querySelector('.t-name').textContent = CHEF.name;
+      tooltip.querySelector('.t-role').textContent = CHEF.role;
+    } else if (hit.type === 'zone') {
+      const ZONE_TIPS = {
+        conference: { name: 'Salle de conférence', role: 'Briefings d\'équipe' },
+        kitchen:    { name: 'Cantine', role: 'Pause café · repas' },
+        archives:   { name: 'Archives de données', role: 'Storage tick-data, backtests, modèles' },
+        toilet:     { name: 'WC', role: 'Pause sanitaire' },
+      };
+      const t = ZONE_TIPS[hit.zone];
+      tooltip.querySelector('.t-name').textContent = t.name;
+      tooltip.querySelector('.t-role').textContent = t.role;
+    }
+    tooltip.style.left = (e.clientX + 14) + 'px';
+    tooltip.style.top = (e.clientY - 8) + 'px';
+    tooltip.classList.add('show');
+  } else {
+    canvas.style.cursor = '';
+    tooltip.classList.remove('show');
+  }
+});
+
+let downPos = { x: 0, y: 0 };
+canvas.addEventListener('pointerdown', (e) => { downPos.x = e.clientX; downPos.y = e.clientY; });
+canvas.addEventListener('pointerup', (e) => {
+  if (Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y) > 4) return;
+  const hit = getHit(e);
+  if (!hit) return;
+  if (hit.type === 'agent') openAgentPanel(hit.group);
+  else if (hit.type === 'chef') openChefPanel();
+  else if (hit.type === 'zone') openZonePanel(hit.zone);
+});
+
+// ============================================================
+// PANEL — Agent
+// ============================================================
+const panel = document.getElementById('panel');
+const panelHead = document.getElementById('panel-head-content');
+const panelBody = document.getElementById('panel-body');
+document.getElementById('close-panel').onclick = () => panel.classList.remove('open');
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function openAgentPanel(group) {
+  const agent = group.userData.agent;
+  const s = STATUS_LABEL[agent.status];
+  const hex = '#' + agent.color.toString(16).padStart(6, '0');
+  const initials = computeInitials(agent.name);
+
+  panelHead.innerHTML = `
+    <div class="avatar" style="background:${hex}">${escapeHtml(initials)}</div>
+    <h2 id="agent-name" contenteditable="true" spellcheck="false">${escapeHtml(agent.name)}</h2>
+    <div class="edit-hint">✏️ clic sur le nom pour modifier (les initiales suivront)</div>
+    <div class="role">${escapeHtml(agent.role)}</div>
+  `;
+  panelBody.innerHTML = `
+    <div class="section">
+      <div class="section-title">État</div>
+      <div class="status-pill">
+        <span style="width:8px;height:8px;border-radius:50%;background:${s.hex};box-shadow:0 0 8px ${s.hex}"></span>
+        <span>${s.label}</span>
+      </div>
+    </div>
+    ${agent.mission ? `
+    <div class="section">
+      <div class="section-title">Mission en cours</div>
+      <div class="mission">${escapeHtml(agent.mission)}</div>
+    </div>` : ''}
+    <div class="section">
+      <div class="section-title">Devise</div>
+      <div class="section-body" style="font-style:italic;color:${hex}">${escapeHtml(agent.motto)}</div>
+    </div>
+    <div class="section">
+      <div class="section-title">Parcours</div>
+      <div class="section-body">${escapeHtml(agent.background)}</div>
+    </div>
+    <div class="section">
+      <div class="section-title">Mandat</div>
+      <div class="section-body">${escapeHtml(agent.mandate)}</div>
+    </div>
+    <div class="section">
+      <div class="section-title">Invocation</div>
+      <div class="code-chip">@${agent.id}</div>
+      <button class="btn" id="copy-handle">Copier le handle</button>
+    </div>
+  `;
+  panel.classList.add('open');
+
+  const nameEl = document.getElementById('agent-name');
+  nameEl.addEventListener('blur', () => {
+    const newName = nameEl.textContent.trim() || agent.name;
+    if (newName !== agent.name) {
+      agent.name = newName;
+      const ov = loadOverrides(); ov[agent.id] = { name: newName }; saveOverrides(ov);
+      rebuildPlate(group);
+      toast(`Nom mis à jour : ${newName} (${computeInitials(newName)})`);
+    }
+  });
+  nameEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); }
+  });
+  document.getElementById('copy-handle').onclick = function() {
+    navigator.clipboard.writeText('@' + agent.id);
+    this.textContent = '✓ Copié';
+    setTimeout(() => this.textContent = 'Copier le handle', 1500);
+  };
+}
+
+// ============================================================
+// PANEL — DG (Direction)
+// ============================================================
+function openChefPanel() {
+  const busy = AGENTS.filter(a => a.status === 'busy').length;
+  const avail = AGENTS.filter(a => a.status === 'available').length;
+  const off = AGENTS.filter(a => a.status === 'off').length;
+  const hex = '#' + CHEF.color.toString(16).padStart(6, '0');
+  const initials = computeInitials(CHEF.name);
+
+  panelHead.innerHTML = `
+    <div class="avatar" style="background:linear-gradient(135deg,${hex},#f0916b)">${escapeHtml(initials)}</div>
+    <h2 id="chef-name" contenteditable="true" spellcheck="false">${escapeHtml(CHEF.name)}</h2>
+    <div class="edit-hint">✏️ clic sur le nom pour modifier</div>
+    <div class="role">${escapeHtml(CHEF.role)}</div>
+  `;
+  panelBody.innerHTML = `
+    <div class="section">
+      <div class="section-title">Mandat</div>
+      <div class="section-body">${escapeHtml(CHEF.mandate)}</div>
+    </div>
+    <div class="section">
+      <div class="section-title">Devise</div>
+      <div class="section-body" style="font-style:italic;color:${hex}">${escapeHtml(CHEF.motto)}</div>
+    </div>
+    <div class="section">
+      <div class="section-title">Vue d'ensemble équipe</div>
+      <div class="section-body">
+        <strong>${AGENTS.length}</strong> agents · ${busy} en mission · ${avail} disponibles · ${off} off-duty
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Équipe — clic sur un nom pour modifier</div>
+      <div class="team-grid" id="team-grid"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Actions</div>
+      <button class="btn" id="reset-all">Tout passer en disponible</button>
+      <button class="btn ghost" id="reset-names" style="margin-top:8px">Réinitialiser tous les noms</button>
+    </div>
+  `;
+  panel.classList.add('open');
+
+  // Edition nom DG
+  const chefNameEl = document.getElementById('chef-name');
+  chefNameEl.addEventListener('blur', () => {
+    const newName = chefNameEl.textContent.trim() || CHEF.name;
+    if (newName !== CHEF.name) {
+      CHEF.name = newName;
+      const ov = loadOverrides(); ov.chef = { name: newName }; saveOverrides(ov);
+      rebuildPlate(chefMesh);
+      // Refresh avatar in panel head
+      document.querySelector('.panel .avatar').textContent = computeInitials(newName);
+      toast(`DG renommé : ${newName} (${computeInitials(newName)})`);
+    }
+  });
+  chefNameEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); chefNameEl.blur(); }
+  });
+
+  const grid = document.getElementById('team-grid');
+  AGENTS.forEach(agent => {
+    const mesh = agentMeshes.find(m => m.userData.agent.id === agent.id);
+    const ahex = '#' + agent.color.toString(16).padStart(6, '0');
+    const s = STATUS_LABEL[agent.status];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="name" contenteditable="true" spellcheck="false" data-id="${agent.id}">${escapeHtml(agent.name)}</div>
+      <div class="role-mini" style="color:${ahex}">${escapeHtml(agent.role)}</div>
+      <div class="stat-row"><span class="dot" style="background:${s.hex};box-shadow:0 0 6px ${s.hex}"></span> ${s.label}</div>
+    `;
+    grid.appendChild(card);
+    const nameEl = card.querySelector('.name');
+    nameEl.addEventListener('blur', () => {
+      const newName = nameEl.textContent.trim() || agent.name;
+      if (newName !== agent.name) {
+        agent.name = newName;
+        const ov = loadOverrides(); ov[agent.id] = { name: newName }; saveOverrides(ov);
+        rebuildPlate(mesh);
+        toast(`Nom mis à jour : ${newName} (${computeInitials(newName)})`);
+      }
+    });
+    nameEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); }
+    });
+  });
+
+  document.getElementById('reset-all').onclick = () => {
+    AGENTS.forEach(a => setAgentStatusInternal(a.id, 'available', null));
+    toast('Tous les agents sont disponibles');
+    openChefPanel();
+  };
+  document.getElementById('reset-names').onclick = () => {
+    saveOverrides({});
+    CHEF.name = CHEF_DEFAULT.name;
+    rebuildPlate(chefMesh);
+    AGENTS.forEach((a, i) => {
+      a.name = DEFAULT_AGENTS[i].name;
+      const m = agentMeshes.find(x => x.userData.agent.id === a.id);
+      if (m) rebuildPlate(m);
+    });
+    toast('Noms réinitialisés');
+    openChefPanel();
+  };
+}
+
+// ============================================================
+// PANEL — Zone (conf / cantine / archives / WC)
+// ============================================================
+function openZonePanel(zone) {
+  const Z = {
+    conference: {
+      title: 'Salle de conférence',
+      role: 'Briefings d\'équipe',
+      icon: '🎥',
+      desc: 'Espace de réunion avec table ovale pour 10 et écran mural affichant le dashboard de trading en temps réel.',
+      uses: ['Briefing hebdomadaire d\'équipe', 'Présentation des verdicts de backtest', 'Revue mensuelle de performance', 'Décisions de déploiement (DG + Risk + Quant)'],
+    },
+    kitchen: {
+      title: 'Cantine',
+      role: 'Pause café · repas',
+      icon: '☕',
+      desc: 'Espace détente avec comptoir-bar, frigo, machine à café et 2 tables rondes. Les pauses sont sacrées — c\'est là que naissent les meilleures idées.',
+      uses: ['Pause café (toutes les 90 min recommandé)', 'Déjeuner d\'équipe', 'Discussions informelles', 'Décompression après une session difficile'],
+    },
+    archives: {
+      title: 'Archives de données',
+      role: 'Storage tick-data, backtests, modèles',
+      icon: '🗄️',
+      desc: 'Centre de données interne. 4 racks serveurs hébergent : tick-data historique (982 GB), résultats de backtests (42 GB), live-logs (17 GB), modèles ONNX (8 GB).',
+      uses: ['Yuna y récupère ses datasets pour le ML', 'Hélène y trouve les .xlsx de backtests à auditer', 'Sébastien y compare les logs live vs backtest', 'Marc y stocke les .mq5 versionnés', 'Olivier y consulte les régimes historiques'],
+    },
+    toilet: {
+      title: 'WC',
+      role: 'Pause sanitaire',
+      icon: '🚻',
+      desc: 'Toilettes de l\'étage. Pas grand-chose à dire de plus.',
+      uses: ['Pauses physiologiques', 'Échapper 2 min à une mauvaise série de trades', 'Se laver les mains avant le café'],
+    },
+  };
+  const z = Z[zone];
+  panelHead.innerHTML = `
+    <div class="avatar" style="background:rgba(215,119,87,0.2);color:#D77757;font-size:26px">${z.icon}</div>
+    <h2>${escapeHtml(z.title)}</h2>
+    <div class="role">${escapeHtml(z.role)}</div>
+  `;
+  panelBody.innerHTML = `
+    <div class="section">
+      <div class="section-title">Description</div>
+      <div class="section-body">${escapeHtml(z.desc)}</div>
+    </div>
+    <div class="section">
+      <div class="section-title">Usages</div>
+      <div class="section-body">
+        <ul style="padding-left:18px;line-height:1.8">
+          ${z.uses.map(u => `<li>${escapeHtml(u)}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+  panel.classList.add('open');
+}
+
+// ============================================================
+// Stats counter
+// ============================================================
+function refreshStats() {
+  document.getElementById('busy-count').textContent = AGENTS.filter(a => a.status === 'busy').length;
+  document.getElementById('avail-count').textContent = AGENTS.filter(a => a.status === 'available').length;
+}
+refreshStats();
+
+// Toast
+const toastEl = document.getElementById('toast');
+let toastTimer;
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2400);
+}
+
+// ============================================================
+// API console
+// ============================================================
+function setAgentStatusInternal(id, status, mission = null) {
+  const mesh = agentMeshes.find(m => m.userData.agent.id === id);
+  if (!mesh) return;
+  const agent = mesh.userData.agent;
+  agent.status = status;
+  agent.mission = mission;
+  mesh.userData.led.material.color.setHex(STATUS_COLORS[status]);
+  mesh.userData.ledLight.color.setHex(STATUS_COLORS[status]);
+  mesh.userData.avatarGroup.visible = status !== 'off';
+  const newScreenCanvas = makeScreenCanvas(agent);
+  mesh.userData.screen.material.map.image = newScreenCanvas;
+  mesh.userData.screen.material.map.needsUpdate = true;
+  refreshStats();
+}
+window.setAgentStatus = (id, status, mission) => {
+  setAgentStatusInternal(id, status, mission);
+  console.log(`✓ ${id} → ${status}${mission ? ` (${mission})` : ''}`);
+};
+window.setAgentName = (id, name) => {
+  if (id === 'chef') {
+    CHEF.name = name;
+    const ov = loadOverrides(); ov.chef = { name }; saveOverrides(ov);
+    rebuildPlate(chefMesh);
+    console.log(`✓ DG renommé : ${name} (${computeInitials(name)})`);
+    return;
+  }
+  const agent = AGENTS.find(a => a.id === id);
+  if (!agent) return console.warn('not found:', id);
+  agent.name = name;
+  const ov = loadOverrides(); ov[id] = { name }; saveOverrides(ov);
+  const m = agentMeshes.find(x => x.userData.agent.id === id);
+  if (m) rebuildPlate(m);
+  console.log(`✓ ${id} renommé : ${name} (${computeInitials(name)})`);
+};
+window.listAgents = () => [
+  { id: 'chef', name: CHEF.name, role: CHEF.role },
+  ...AGENTS.map(a => ({ id: a.id, name: a.name, status: a.status, mission: a.mission }))
+];
+console.log('%c🏢 Trading Algo Office (v3)', 'color:#D77757;font-weight:bold;font-size:14px');
+console.log('• setAgentStatus(id, status, mission)');
+console.log('• setAgentName(id, name)  // id="chef" pour le DG');
+console.log('• listAgents()');
+console.log('• addActivity(id, mission, sec)  // log + animation');
+console.log('• replaySession()                // rejoue la séance XAU');
+
+// ============================================================
+// ACTIVITY FEED — voir les agents travailler en direct
+// ============================================================
+const feedBody = document.getElementById('feed-body');
+const replayBtn = document.getElementById('replay-btn');
+
+function fmtTime(d = new Date()) {
+  return d.toTimeString().slice(0, 8);
+}
+function getAgentOrChef(id) {
+  if (id === 'chef') return CHEF;
+  return AGENTS.find(a => a.id === id);
+}
+
+function addActivityEntry(agentId, mission, status = 'running') {
+  const agent = getAgentOrChef(agentId) || { name: agentId, color: 0xD77757 };
+  const empty = feedBody.querySelector('.empty');
+  if (empty) empty.remove();
+
+  const hex = '#' + agent.color.toString(16).padStart(6, '0');
+  const entry = document.createElement('div');
+  entry.className = 'entry';
+  entry.innerHTML = `
+    <div class="time">${fmtTime()}</div>
+    <div class="agent-dot ${status === 'running' ? 'running' : ''}" style="background:${hex};box-shadow:0 0 6px ${hex}"></div>
+    <div class="content">
+      <div class="agent-name">${escapeHtml(agent.name)}</div>
+      <div class="mission">${escapeHtml(mission)}</div>
+      <div class="status-tag ${status}">${status === 'running' ? '▸ EN COURS…' : status === 'recv' ? '📥 REÇU' : '✓ TERMINÉ'}</div>
+    </div>
+  `;
+  feedBody.insertBefore(entry, feedBody.firstChild);
+  feedBody.scrollTop = 0;
+  return entry;
+}
+
+function setChefStatus(status) {
+  CHEF.status = status;
+  if (chefMesh && chefMesh.userData.led) {
+    chefMesh.userData.led.material.color.setHex(STATUS_COLORS[status]);
+    chefMesh.userData.ledLight.color.setHex(STATUS_COLORS[status]);
+  }
+}
+
+// addActivity(id, mission, durationSec)
+// → met l'agent (ou le chef) en busy + log dans le feed + animation halo/tete + repasse en available
+function addActivity(agentId, mission, durationSec = 10) {
+  if (agentId === 'chef') setChefStatus('busy');
+  else setAgentStatusInternal(agentId, 'busy', mission);
+  const entry = addActivityEntry(agentId, mission, 'running');
+  setTimeout(() => {
+    if (agentId === 'chef') setChefStatus('available');
+    else setAgentStatusInternal(agentId, 'available', null);
+    const dot = entry.querySelector('.agent-dot');
+    const tag = entry.querySelector('.status-tag');
+    dot.classList.remove('running');
+    tag.textContent = '✓ TERMINÉ';
+    tag.classList.remove('running');
+    tag.classList.add('done');
+  }, durationSec * 1000);
+}
+
+// ============================================================
+// MODE DEMO CONTINU — simule une journee de travail dans l'agence
+// ============================================================
+let demoModeOn = false;
+let demoTimer = null;
+const DEMO_TASKS = [
+  ['quant-strategist',     'Diagnostic régime EUR/USD H1',                          8],
+  ['mql5-developer',       'Compilation et test Gold_v15.mq5',                       10],
+  ['backtest-auditor',     'Audit verdict backtest XAU 2024-2025',                   12],
+  ['risk-manager',         'Audit exposition agrégée et sizing journalier',          7],
+  ['data-scientist',       'Analyse Fisher segments horaires 6-10 UTC',              11],
+  ['forward-test-watchman','Drift report hebdomadaire — comparaison live vs bt',     9],
+  ['discipline-coach',     'Check-in journalier · journal de trading',               6],
+  ['broker-execution-specialist', 'Audit spread + slippage Exness · 24h',            8],
+  ['quant-strategist',     'Veille macro · publication Fed minutes',                 6],
+  ['mql5-developer',       'Refactor anti-stacking + IndicatorRelease()',            9],
+  ['chef',                 'Briefing matinal équipe + revue PnL veille',             7],
+  ['risk-manager',         'Stress test 8 SL consécutifs · DD projeté',              5],
+];
+
+function pickRandomTask() {
+  return DEMO_TASKS[Math.floor(Math.random() * DEMO_TASKS.length)];
+}
+
+function tickDemo() {
+  if (!demoModeOn) return;
+  // Choisir 1-2 agents disponibles à mettre au travail
+  const busyIds = new Set(AGENTS.filter(a => a.status === 'busy').map(a => a.id));
+  if (CHEF.status === 'busy') busyIds.add('chef');
+  const tries = 5;
+  for (let i = 0; i < tries; i++) {
+    const [id, mission, dur] = pickRandomTask();
+    if (busyIds.has(id)) continue;
+    addActivity(id, mission, dur);
+    break;
+  }
+  // Cadencement : nouvelle tâche toutes les 3 à 6 secondes
+  demoTimer = setTimeout(tickDemo, 3000 + Math.random() * 3000);
+}
+
+function startDemoMode() {
+  demoModeOn = true;
+  toast('Mode démo continu : ON');
+  tickDemo();
+}
+function stopDemoMode() {
+  demoModeOn = false;
+  if (demoTimer) clearTimeout(demoTimer);
+  toast('Mode démo continu : OFF');
+}
+window.startDemoMode = startDemoMode;
+window.stopDemoMode = stopDemoMode;
+
+// ============================================================
+// REPLAY de la séance d'analyse XAU du 5 juin 2026
+// (reproduit ce qui s'est passé dans la conversation Claude)
+// ============================================================
+function replaySession() {
+  replayBtn.disabled = true;
+  replayBtn.textContent = '● EN COURS…';
+
+  // Reset
+  AGENTS.forEach(a => {
+    if (a.status === 'busy') setAgentStatusInternal(a.id, 'available', null);
+  });
+
+  // 1) Augustin partage le screenshot
+  setTimeout(() => addActivityEntry('chef',
+    'Partage 3 screenshots XAUUSDm (H4, H1, M15) — « qu\'en pensez-vous ? »', 'recv'), 200);
+
+  // 2) Le quant-strategist analyse
+  setTimeout(() => addActivity('quant-strategist',
+    'Diagnostic régime XAU 3 TF · setup short 4475-4490', 9), 1200);
+
+  // 3) Le risk-manager planifie
+  setTimeout(() => addActivity('risk-manager',
+    'Plan de gestion · sizing 0.75% · cutoff 13h30 UTC pre-NFP', 9), 2400);
+
+  // 4) La coach vérifie les biais
+  setTimeout(() => addActivity('discipline-coach',
+    'Détection biais « FOMO vendredi NFP » · validation cherchée', 9), 3600);
+
+  // 5) Synthèse orchestrateur
+  setTimeout(() => {
+    addActivityEntry('chef',
+      'Synthèse livrée · verdict 🟡 WAIT · attendre lundi sur même structure', 'done');
+    replayBtn.disabled = false;
+    replayBtn.textContent = '▶ REPLAY SÉANCE';
+  }, 13000);
+}
+
+replayBtn.onclick = replaySession;
+
+const demoBtn = document.getElementById('demo-btn');
+demoBtn.onclick = () => {
+  if (demoModeOn) {
+    stopDemoMode();
+    demoBtn.textContent = '⚡ DEMO LIVE';
+    demoBtn.style.background = 'transparent';
+    demoBtn.style.color = 'var(--orange)';
+  } else {
+    startDemoMode();
+    demoBtn.textContent = '■ STOP DEMO';
+    demoBtn.style.background = 'var(--orange)';
+    demoBtn.style.color = 'white';
+  }
+};
+
+window.addActivity = addActivity;
+window.replaySession = replaySession;
+window.addActivityEntry = addActivityEntry;
+window.setChefStatus = setChefStatus;
+
+// ============================================================
+// ANIMATION
+// ============================================================
+const clock = new THREE.Clock();
+function animate() {
+  const t = clock.getElapsedTime();
+
+  // Agents
+  agentMeshes.forEach(mesh => {
+    const { led, ledLight, agent, plate, avatarGroup, halo, headGroup, orbiter } = mesh.userData;
+    const phaseSeed = mesh.position.x * 0.5;
+
+    if (agent.status === 'busy') {
+      // LED pulse
+      const p = 0.85 + 0.18 * Math.sin(t * 2.5 + phaseSeed);
+      led.scale.setScalar(p); ledLight.intensity = 0.55 * p;
+
+      // Halo "thinking" qui pulse autour de la tête (visible en busy)
+      if (halo) {
+        halo.material.opacity = 0.22 + 0.12 * Math.sin(t * 3 + phaseSeed);
+        const s = 1 + 0.18 * Math.sin(t * 2 + phaseSeed);
+        halo.scale.setScalar(s);
+      }
+      // Tete qui hoche legerement (signe d'activite mentale)
+      if (headGroup) {
+        headGroup.rotation.y = Math.sin(t * 1.8 + phaseSeed) * 0.18;
+        headGroup.rotation.x = Math.sin(t * 1.2 + phaseSeed) * 0.07;
+      }
+      // Particule "pensée" qui orbite autour de la tête
+      if (orbiter) {
+        orbiter.material.opacity = 0.85;
+        const r = 0.5;
+        orbiter.position.x = Math.cos(t * 2.5 + phaseSeed) * r;
+        orbiter.position.z = Math.sin(t * 2.5 + phaseSeed) * r;
+        orbiter.position.y = 0.1 + Math.sin(t * 3) * 0.05;
+      }
+    } else if (agent.status === 'alert') {
+      const p = 0.7 + 0.3 * Math.sin(t * 6);
+      led.scale.setScalar(p); ledLight.intensity = 0.8 * p;
+      // Halo rouge pulsant fort
+      if (halo) {
+        halo.material.color.setHex(0xd96565);
+        halo.material.opacity = 0.3 + 0.2 * Math.sin(t * 8);
+        halo.scale.setScalar(1.2);
+      }
+      if (headGroup) headGroup.rotation.set(0, 0, 0);
+      if (orbiter) orbiter.material.opacity = 0;
+    } else {
+      // idle / off
+      led.scale.setScalar(1);
+      if (halo) {
+        halo.material.opacity = 0;
+        halo.material.color.setHex(agent.color);
+      }
+      if (headGroup) {
+        // léger retour à la position neutre
+        headGroup.rotation.y *= 0.92;
+        headGroup.rotation.x *= 0.92;
+      }
+      if (orbiter) orbiter.material.opacity = 0;
+    }
+    if (avatarGroup && avatarGroup.visible) {
+      avatarGroup.scale.y = 1 + Math.sin(t * 1.5 + phaseSeed) * 0.006;
+    }
+    plate.lookAt(camera.position);
+  });
+
+  // DG
+  if (chefMesh && chefMesh.userData.holo) {
+    chefMesh.userData.holo.rotation.z = t * 0.4;
+    chefMesh.userData.holo2.rotation.z = -t * 0.6;
+    if (chefMesh.userData.plate) chefMesh.userData.plate.lookAt(camera.position);
+    if (chefMesh.userData.avatarGroup) {
+      chefMesh.userData.avatarGroup.scale.y = 1 + Math.sin(t * 1.3) * 0.006;
+    }
+    // Halo DG en busy
+    if (chefMesh.userData.chefHalo && CHEF.status === 'busy') {
+      chefMesh.userData.chefHalo.material.opacity = 0.22 + 0.12 * Math.sin(t * 3);
+      chefMesh.userData.chefHalo.scale.setScalar(1 + 0.18 * Math.sin(t * 2));
+      if (chefMesh.userData.chefHeadGroup) {
+        chefMesh.userData.chefHeadGroup.rotation.y = Math.sin(t * 1.8) * 0.18;
+        chefMesh.userData.chefHeadGroup.rotation.x = Math.sin(t * 1.2) * 0.07;
+      }
+      if (chefMesh.userData.chefOrbiter) {
+        chefMesh.userData.chefOrbiter.material.opacity = 0.85;
+        chefMesh.userData.chefOrbiter.position.x = Math.cos(t * 2.5) * 0.5;
+        chefMesh.userData.chefOrbiter.position.z = Math.sin(t * 2.5) * 0.5;
+      }
+    } else if (chefMesh.userData.chefHalo) {
+      chefMesh.userData.chefHalo.material.opacity = 0;
+      if (chefMesh.userData.chefHeadGroup) {
+        chefMesh.userData.chefHeadGroup.rotation.y *= 0.92;
+        chefMesh.userData.chefHeadGroup.rotation.x *= 0.92;
+      }
+      if (chefMesh.userData.chefOrbiter) {
+        chefMesh.userData.chefOrbiter.material.opacity = 0;
+      }
+    }
+  }
+
+  // Zone labels — face camera
+  zoneLabels.forEach(l => l.lookAt(camera.position));
+
+  // Archive LEDs blink
+  if (archivesMesh && archivesMesh.userData.leds) {
+    archivesMesh.userData.leds.forEach(L => {
+      const v = 0.5 + 0.5 * Math.sin(t * 3 + L.phase);
+      L.mesh.material.color.setHex(L.kind === 'g'
+        ? (v > 0.7 ? 0x6dcc92 : 0x2a4a30)
+        : (v > 0.6 ? 0xe0a050 : 0x4a3520));
+    });
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+requestAnimationFrame(() => {
+  setTimeout(() => document.getElementById('loader').classList.add('hidden'), 250);
+});
+</script>
+</body>
+</html>

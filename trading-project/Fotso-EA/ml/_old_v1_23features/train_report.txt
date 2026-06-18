@@ -1,0 +1,47 @@
+﻿Total trades: 262
+Date range: 2024-04-25 16:31:00 → 2026-01-21 04:00:00
+Overall WR: 49.2%
+Sum profit: 1661.74
+
+=== SPLIT ===
+Train: 209 (2024-04-25 → 2025-09-10)
+Test : 53  (2025-09-12 → 2026-01-21)
+Train WR: 46.9% / Test WR: 58.5%
+
+=== METRICS (test set) ===
+Model              AUC   Brier  LogLoss
+----------------------------------------
+LogReg           0.597   0.282    0.759
+RandomForest     0.504   0.264    0.722
+GradBoost        0.449   0.400    1.095
+(baseline ŷ=μ)   0.500   0.256    0.706
+
+=== SIMULATION ML-FILTER (test set) ===
+Model           Threshold  Kept  Skip     WR    NetPnL    vs raw
+----------------------------------------------------------------------
+RAW (no filter)               53     0  58.5%   958.56          
+LogReg               0.45    13    40  69.2%   312.23  -646.33
+LogReg               0.50     5    48  80.0%   221.09  -737.47
+LogReg               0.55     4    49  75.0%   181.37  -777.19
+LogReg               0.60     3    50  66.7%    79.00  -879.56
+LogReg               0.65     1    52   0.0%  -105.75 -1064.31
+RandomForest         0.45    25    28  48.0%   193.18  -765.38
+RandomForest         0.50     4    49  75.0%   181.37  -777.19
+GradBoost            0.45     2    51  50.0%     4.93  -953.63
+
+=== TOP 15 FEATURES (RandomForest) ===
+   0.145  num__rr_target
+   0.130  num__tp_dist_pct
+   0.121  num__hour
+   0.111  num__sl_dist_pct
+   0.106  num__entry
+   0.097  num__month
+   0.047  num__dow
+   0.034  num__raison_sl_explosion
+   0.032  cat__adn_ADN_DECLENCHEUR
+   0.020  cat__miroir_MANIPULATION_HAUSSIER
+   0.019  cat__session_ASIA
+   0.019  cat__miroir_OK
+   0.018  cat__adn_ADN_EXPLOSION
+   0.015  cat__adn_ADN_INCONNUE
+   0.014  cat__session_NY

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Augustin Fotso — Audit d'Expert Advisors</title>
+<meta name="description" content="Audit statistique professionnel de vos Expert Advisors MetaTrader. Détection d'overfitting, de curve-fitting et de biais avant tout déploiement de capital.">
+<style>
+  :root {
+    --navy: #0a2540;
+    --navy-deep: #06182e;
+    --navy-light: #13304a;
+    --accent: #facc15;
+    --accent-bright: #fde047;
+    --ink: #0a2540;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --green: #16a34a;
+    --amber: #d97706;
+    --red: #dc2626;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+  /* Top bar */
+  .topbar {
+    background: var(--navy);
+    padding: 18px 0;
+  }
+  .topbar-inner {
+    max-width: 760px; margin: 0 auto; padding: 0 24px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .topbar .brand-mark {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    color: var(--navy);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 18px;
+    letter-spacing: -1px;
+  }
+  .topbar .brand-text {
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 3px;
+    font-size: 14px;
+  }
+  .topbar .brand-tag {
+    margin-left: auto;
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+
+  /* Header / hero */
+  header {
+    padding: 80px 0 56px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+  }
+  .eyebrow {
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--navy);
+    font-weight: 700;
+    margin-bottom: 18px;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .eyebrow::before {
+    content: ''; width: 24px; height: 2px; background: var(--accent);
+  }
+  h1 {
+    font-size: 40px;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    color: var(--ink);
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .lead {
+    font-size: 19px;
+    color: var(--text);
+    max-width: 600px;
+  }
+  .lead strong { color: var(--ink); font-weight: 600; }
+
+  /* Sections */
+  section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+  h2 {
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 28px;
+  }
+  h3 {
+    font-size: 22px;
+    color: var(--ink);
+    font-weight: 650;
+    margin-bottom: 14px;
+    letter-spacing: -0.2px;
+  }
+  p { margin-bottom: 16px; }
+  p:last-child { margin-bottom: 0; }
+
+  /* Problem statement */
+  .problem {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 28px 30px;
+    font-size: 17px;
+  }
+  .problem strong { color: var(--ink); }
+
+  /* Method list */
+  .method-grid {
+    display: grid;
+    gap: 22px;
+  }
+  .method-item {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+  }
+  .method-num {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    background: var(--navy);
+    color: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .method-item .body strong { color: var(--ink); display: block; margin-bottom: 3px; font-size: 16px; }
+  .method-item .body span { color: var(--muted); font-size: 15px; }
+
+  /* Services grid */
+  .services-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .service-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+  .service-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: 0 4px 14px rgba(10, 37, 64, 0.08);
+  }
+  .service-card .tag {
+    display: inline-block;
+    background: var(--navy);
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .service-card .tag.new {
+    background: var(--accent);
+    color: var(--navy);
+  }
+  .service-card h4 {
+    font-size: 17px;
+    color: var(--navy);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .service-card .audience {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .service-card .features {
+    font-size: 13.5px;
+    color: var(--text);
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .service-card .footer-line {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .service-card .price-line {
+    color: var(--navy); font-weight: 700; font-size: 18px;
+  }
+  .service-card .delay-line {
+    color: var(--muted); font-size: 12px;
+  }
+  @media (max-width: 560px) {
+    .services-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Deliverable card */
+  .deliverable {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 34px;
+  }
+  .deliverable ul { list-style: none; margin: 18px 0; }
+  .deliverable li {
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    font-size: 16px;
+  }
+  .deliverable li:last-child { border-bottom: none; }
+  .check {
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .verdicts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+  .verdict {
+    font-size: 13px; font-weight: 600;
+    padding: 5px 12px; border-radius: 20px;
+  }
+  .verdict.green { background: rgba(79,138,91,0.12); color: var(--green); }
+  .verdict.amber { background: rgba(192,138,46,0.12); color: var(--amber); }
+  .verdict.red   { background: rgba(181,82,74,0.12); color: var(--red); }
+
+  /* Pricing */
+  .pricing {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 26px;
+    padding-top: 26px;
+    border-top: 1px solid var(--border);
+  }
+  .price { font-size: 38px; font-weight: 700; color: var(--ink); letter-spacing: -1px; }
+  .price-note { font-size: 14px; color: var(--muted); }
+  .delay-badge {
+    margin-left: auto;
+    background: rgba(10, 37, 64, 0.06);
+    color: var(--navy);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  /* About */
+  .about p { font-size: 16px; }
+  .about .credentials {
+    display: grid;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .cred {
+    display: flex; gap: 12px; align-items: flex-start;
+    font-size: 15px;
+  }
+  .cred .dot { color: var(--accent); font-weight: 700; flex-shrink: 0; }
+
+  /* CTA */
+  .cta {
+    text-align: center;
+    padding: 64px 0 72px;
+    border-bottom: none;
+  }
+  .cta h3 { font-size: 26px; margin-bottom: 10px; }
+  .cta p { color: var(--muted); margin-bottom: 28px; }
+  .btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 14px 26px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary {
+    background: var(--navy);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(10, 37, 64, 0.25);
+  }
+  .btn-primary:hover { background: var(--navy-deep); box-shadow: 0 6px 18px rgba(10, 37, 64, 0.35); }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--accent); }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 36px 0;
+    color: var(--muted);
+    font-size: 13px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+  footer .brand { color: var(--navy); font-weight: 700; letter-spacing: 1.5px; }
+  footer .accent-bar {
+    display: inline-block; width: 18px; height: 2px;
+    background: var(--accent); margin-right: 8px; vertical-align: middle;
+  }
+
+  @media (max-width: 560px) {
+    h1 { font-size: 32px; }
+    .lead { font-size: 17px; }
+    header { padding: 56px 0 40px; }
+    .delay-badge { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-mark">F</div>
+    <div class="brand-text">FOTSO&nbsp;COMPANY</div>
+    <div class="brand-tag">QUANT · AUDIT · RESEARCH</div>
+  </div>
+</div>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">RECHERCHE QUANTITATIVE</div>
+    <h1>Vos résultats de trading sont-ils un vrai edge — ou un beau mensonge&nbsp;?</h1>
+    <p class="lead">
+      J'audite vos backtests, journaux de trading, signaux et stratégies copy trading.
+      Verdict statistique <strong>honnête</strong> en 48 h : edge réel ou
+      artefact d'optimisation. Avant que vous n'engagiez le moindre capital.
+    </p>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="problem">
+      <p><strong>La majorité des Expert Advisors affichent +200 % en backtest et détruisent
+      le capital en réel.</strong> La cause est presque toujours la même : sur-optimisation,
+      curve-fitting, biais de sélection, ou validation sur une seule fenêtre de marché favorable.</p>
+      <p>Un backtest flatteur n'est pas une preuve. C'est une hypothèse à auditer.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Méthodologie</h2>
+    <div class="method-grid">
+      <div class="method-item">
+        <div class="method-num">1</div>
+        <div class="body">
+          <strong>Métriques rigoureuses</strong>
+          <span>Sharpe, Sortino, Profit Factor, Recovery Factor, corrélation LR de la courbe d'équité, Z-score des séries.</span>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-num">2</div>
+        <div class="body">
+          <strong>Détection d'overfitting</strong>
+          <span>Courbe trop lisse, paramètres sur-précis, effondrement hors échantillon, Sharpe statistiquement suspect.</span>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-num">3</div>
+        <div class="body">
+          <strong>Identification des biais</strong>
+          <span>Look-ahead, survivorship, selection bias, dépendance à un régime de marché unique.</span>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-num">4</div>
+        <div class="body">
+          <strong>Tests de robustesse recommandés</strong>
+          <span>Walk-forward, validation out-of-sample, analyse de sensibilité paramétrique.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Les 4 services</h2>
+    <p style="color: var(--muted); font-size: 15px; margin-bottom: 24px; margin-top: -12px;">
+      Une seule méthodologie d'audit statistique appliquée à 4 cibles distinctes.
+      Verdict clair sous 48 h.
+    </p>
+    <div class="services-grid">
+
+      <div class="service-card">
+        <span class="tag">FONDATION</span>
+        <h4>Audit Backtest EA</h4>
+        <div class="audience">Pour développeurs d'Expert Advisors MetaTrader</div>
+        <div class="features">
+          Tu m'envoies ton rapport Strategy Tester (.xlsx/.htm).
+          Je détecte overfitting, curve-fitting, biais de sélection, stacking
+          caché. Verdict statistique honnête.
+        </div>
+        <div class="footer-line">
+          <span class="price-line">25 $</span>
+          <span class="delay-line">Livraison sous 48 h</span>
+        </div>
+      </div>
+
+      <div class="service-card">
+        <span class="tag new">NOUVEAU</span>
+        <h4>Audit Journal de Trading</h4>
+        <div class="audience">Pour traders manuels avec MyFxBook, journal Excel ou export broker</div>
+        <div class="features">
+          As-tu réellement un edge — ou tu survis grâce à un winner exceptionnel ?
+          Test du « retire-tes-5-meilleurs-trades », analyse de séquences,
+          détection de biais comportementaux.
+        </div>
+        <div class="footer-line">
+          <span class="price-line">30 $</span>
+          <span class="delay-line">Livraison sous 48 h</span>
+        </div>
+      </div>
+
+      <div class="service-card">
+        <span class="tag new">NOUVEAU</span>
+        <h4>Audit Service de Signaux</h4>
+        <div class="audience">Pour traders qui paient un abonnement signaux (Telegram, Discord, etc.)</div>
+        <div class="features">
+          Tu m'envoies l'historique des signaux du fournisseur.
+          Je calcule le vrai PnL avec spread/slippage réels, détecte le
+          cherry-picking et les signaux fantômes.
+        </div>
+        <div class="footer-line">
+          <span class="price-line">25 $</span>
+          <span class="delay-line">Livraison sous 48 h</span>
+        </div>
+      </div>
+
+      <div class="service-card">
+        <span class="tag new">NOUVEAU</span>
+        <h4>Audit Stratégie Copy Trading</h4>
+        <div class="audience">Pour traders qui copient un Strategy Provider (XM, ZuluTrade, MQL5)</div>
+        <div class="features">
+          Le track record du provider est-il une chance d'un régime — ou un edge
+          durable ? Stress test multi-période, analyse du DD maximum réel,
+          recommandations de sizing.
+        </div>
+        <div class="footer-line">
+          <span class="price-line">25 $</span>
+          <span class="delay-line">Livraison sous 48 h</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Le livrable (identique pour les 4 services)</h2>
+    <div class="deliverable">
+      <h3>Rapport d'audit structuré</h3>
+      <p style="color:var(--muted);font-size:15px">
+        Vous m'envoyez votre rapport Strategy Tester (.xlsx ou .htm).
+        Je vous retourne un rapport structuré.
+      </p>
+      <ul>
+        <li><span class="check">✓</span> Notation de la qualité statistique sur 10</li>
+        <li><span class="check">✓</span> Les 5 problèmes prioritaires détectés</li>
+        <li><span class="check">✓</span> 3 recommandations concrètes d'amélioration</li>
+        <li><span class="check">✓</span> Tests de robustesse à mener avant déploiement</li>
+        <li>
+          <span class="check">✓</span>
+          <span>Verdict clair&nbsp;:</span>
+          <span class="verdicts">
+            <span class="verdict green">DÉPLOYABLE</span>
+            <span class="verdict amber">À REVOIR</span>
+            <span class="verdict red">INUTILISABLE</span>
+          </span>
+        </li>
+      </ul>
+      <div class="pricing">
+        <div class="price">25 $</div>
+        <div class="price-note">tarif de lancement</div>
+        <div class="delay-badge">Livraison sous 48 h</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap about">
+    <h2>Qui je suis</h2>
+    <h3>Augustin Fotso</h3>
+    <p>
+      Ingénieur en formation (génie électrique, niveau 3) et fondateur de
+      <strong>FOTSO COMPANY</strong>, une structure de recherche quantitative
+      appliquée aux marchés financiers. Je travaille au sein d'une équipe de
+      huit spécialistes — développement, statistiques, gestion du risque,
+      science des données.
+    </p>
+    <div class="credentials">
+      <div class="cred"><span class="dot">—</span><span>Spécialisé dans l'analyse rigoureuse de rapports Strategy Tester MetaTrader.</span></div>
+      <div class="cred"><span class="dot">—</span><span>Méthodologie issue de la validation institutionnelle&nbsp;: walk-forward, out-of-sample, contrôle de l'overfitting.</span></div>
+      <div class="cred"><span class="dot">—</span><span>Approche transparente&nbsp;: je documente les échecs autant que les réussites. La rigueur statistique avant le marketing.</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="cta wrap">
+  <h3>Auditons votre Expert Advisor</h3>
+  <p>Réponse sous 24 h. Livraison du rapport sous 48 h.</p>
+  <div class="btns">
+    <a class="btn btn-primary" href="https://wa.me/237656800446" target="_blank" rel="noopener">
+      Démarrer sur WhatsApp
+    </a>
+    <a class="btn btn-secondary" href="mailto:augustin.fotso.quant@gmail.com">
+      Écrire un email
+    </a>
+  </div>
+</div>
+
+<footer>
+  <span class="accent-bar"></span><span class="brand">FOTSO COMPANY</span> · QUANT · AUDIT · RESEARCH · Anti-overfit. Anti-gourou. Données d'abord.
+</footer>
+
+</body>
+</html>
