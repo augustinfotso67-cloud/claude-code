@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kuate Fotso Augustin — CV</title>
+<style>
+  @page {
+    size: A4;
+    margin: 14mm 14mm 14mm 14mm;
+  }
+  :root {
+    --navy: #0a2540;
+    --navy-deep: #06182e;
+    --accent: #facc15;
+    --accent-br: #fde047;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e2e8f0;
+    --light-bg: #f8fafc;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    color: var(--text);
+    font-size: 9.5pt;
+    line-height: 1.45;
+  }
+
+  /* Header */
+  .header {
+    display: table;
+    width: 100%;
+    margin-bottom: 6mm;
+    padding-bottom: 5mm;
+    border-bottom: 3px solid var(--accent);
+  }
+  .header .id-col { display: table-cell; vertical-align: top; }
+  .header .contact-col {
+    display: table-cell; vertical-align: top;
+    text-align: right; font-size: 8.5pt; color: var(--muted);
+  }
+  .header h1 {
+    font-size: 22pt;
+    color: var(--navy);
+    font-weight: 800;
+    letter-spacing: 0.5pt;
+    line-height: 1.1;
+    margin-bottom: 2mm;
+  }
+  .header .role {
+    font-size: 11pt;
+    color: var(--navy);
+    font-weight: 600;
+    margin-bottom: 1.5mm;
+  }
+  .header .location {
+    font-size: 9.5pt;
+    color: var(--muted);
+  }
+  .header .contact-col div { margin-bottom: 1mm; }
+  .header .contact-col a { color: var(--navy); text-decoration: none; font-weight: 600; }
+
+  /* Section */
+  section { margin-bottom: 4.5mm; }
+  h2 {
+    font-size: 9pt;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2pt;
+    font-weight: 800;
+    background: var(--navy);
+    padding: 1.5mm 3mm;
+    margin-bottom: 3mm;
+    border-radius: 2px;
+  }
+
+  /* Summary */
+  .summary {
+    font-size: 10pt;
+    line-height: 1.55;
+    color: var(--text);
+    padding: 1mm 0 2mm 0;
+  }
+  .summary strong { color: var(--navy); }
+
+  /* Experience entry */
+  .entry { margin-bottom: 4mm; page-break-inside: avoid; }
+  .entry .row1 {
+    display: table; width: 100%;
+    margin-bottom: 1mm;
+  }
+  .entry .role-name {
+    display: table-cell;
+    font-size: 10.5pt;
+    color: var(--navy);
+    font-weight: 700;
+  }
+  .entry .date {
+    display: table-cell;
+    text-align: right;
+    color: var(--muted);
+    font-size: 9pt;
+    font-weight: 600;
+    white-space: nowrap;
+    width: 50mm;
+  }
+  .entry .company {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 10pt;
+  }
+  .entry .location-line {
+    color: var(--muted);
+    font-size: 8.5pt;
+    margin-bottom: 1.5mm;
+  }
+  .entry ul {
+    list-style: none;
+    margin-left: 0;
+  }
+  .entry ul li {
+    position: relative;
+    padding-left: 5mm;
+    margin-bottom: 1mm;
+    font-size: 9.5pt;
+    line-height: 1.5;
+  }
+  .entry ul li::before {
+    content: "▸";
+    position: absolute;
+    left: 1mm;
+    color: var(--accent);
+    font-weight: 800;
+  }
+  .entry ul li strong { color: var(--navy); }
+
+  /* Skills grid */
+  .skills-grid {
+    display: table;
+    width: 100%;
+  }
+  .skills-grid .skill-row {
+    display: table-row;
+  }
+  .skills-grid .skill-label {
+    display: table-cell;
+    width: 38mm;
+    font-weight: 700;
+    color: var(--navy);
+    padding: 1mm 0;
+    font-size: 9pt;
+    vertical-align: top;
+  }
+  .skills-grid .skill-value {
+    display: table-cell;
+    padding: 1mm 0;
+    font-size: 9pt;
+    vertical-align: top;
+  }
+
+  /* Education compact */
+  .edu-line {
+    margin-bottom: 2mm;
+    font-size: 9.5pt;
+  }
+  .edu-line .school {
+    font-weight: 700; color: var(--navy);
+  }
+  .edu-line .field {
+    color: var(--accent); font-weight: 600;
+  }
+  .edu-line .date {
+    color: var(--muted); font-size: 8.5pt;
+  }
+
+  /* Footer accent */
+  .footer-tag {
+    margin-top: 4mm;
+    padding: 2mm 3mm;
+    background: var(--light-bg);
+    border-left: 3px solid var(--accent);
+    font-size: 8.5pt;
+    color: var(--muted);
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="id-col">
+    <h1>KUATE FOTSO AUGUSTIN</h1>
+    <div class="role">Founder · FOTSO COMPANY — Electrical Engineering Student</div>
+    <div class="location">Douala, Cameroon</div>
+  </div>
+  <div class="contact-col">
+    <div>augustin.fotso.quant@gmail.com</div>
+    <div>+237 656 80 04 46</div>
+    <div>augustinfotso67-cloud.github.io/fotso-audit</div>
+    <div>github.com/augustinfotso67-cloud</div>
+  </div>
+</div>
+
+<section>
+  <h2>PROFILE</h2>
+  <div class="summary">
+    Final-year electrical engineering student and founder of <strong>FOTSO COMPANY</strong>, an open quantitative audit practice for trading strategies. Specialized in statistical evaluation of algorithmic trading systems — backtest pathology detection, walk-forward validation, out-of-sample testing. Public methodology emphasizing rigor, transparency, and anti-overfit discipline. Operating solo with a multi-specialist agent-orchestrated workflow.
+  </div>
+</section>
+
+<section>
+  <h2>EXPERIENCE</h2>
+
+  <div class="entry">
+    <div class="row1">
+      <div class="role-name">Founder &amp; Lead Researcher</div>
+      <div class="date">Feb 2026 — Present</div>
+    </div>
+    <div class="company">FOTSO COMPANY</div>
+    <div class="location-line">Remote · Cameroon</div>
+    <ul>
+      <li>Built an end-to-end audit framework for MetaTrader Expert Advisors, trading journals, signal services, and copy-trading strategies — methodology, deliverables, pricing, public landing page</li>
+      <li>Published <strong>first public audit case study</strong> (GOLD-PIP MINER EA V4) demonstrating a 77% win rate / 100% drawdown trap — shared on Reddit (r/algotrading, r/IndiaAlgoTrading) and Telegram (780+ member EA community)</li>
+      <li>Designed and tested a multi-version proprietary Expert Advisor (<strong>FotsoCerveauAdaptatif</strong>): 6 instruments supported (XAU/USD, EUR/USD, US30, NAS100, BTC, GBP/USD), adaptive memory architecture, integration of 5 ONNX ML models, audit-validated regime filters</li>
+      <li>Validated v6.0 with Sharpe OOS 0.88, max drawdown 3-5%, profit factor 1.16 across 4.25 years of XAU/USD M15 data</li>
+      <li>Maintain a <strong>public repository</strong> documenting methodology, design decisions, successes and failures — including transparent post-mortem of v5.6 overfit demystification and v5.91 archival</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="row1">
+      <div class="role-name">Independent Quantitative Research</div>
+      <div class="date">Feb 2026 — Present</div>
+    </div>
+    <div class="company">Self-directed practice</div>
+    <ul>
+      <li>4-month intensive practice in systematic trading: data pipeline, backtesting, statistical validation, deployment risk assessment</li>
+      <li>Built Python pipeline for backtest report parsing (.xlsx) with 38+ analysis scripts, automated metric extraction, anomaly detection</li>
+      <li>Documented full strategy lifecycle: hypothesis → backtest → audit → verdict → archive — published as study material</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>EDUCATION</h2>
+  <div class="edu-line">
+    <span class="school">Institut Supérieur de Management et de l'Entrepreneuriat (IME)</span> ·
+    <span class="field">Electrical Engineering — Year 3 (Engineering Degree, in progress)</span><br>
+    <span class="date">Douala, Cameroon · 2024 — 2027 (expected)</span>
+  </div>
+</section>
+
+<section>
+  <h2>SKILLS</h2>
+  <div class="skills-grid">
+    <div class="skill-row">
+      <div class="skill-label">Quantitative &amp; Statistical</div>
+      <div class="skill-value">Statistical audit (Sharpe, Sortino, Profit Factor, Z-Score, Recovery Factor), walk-forward validation, out-of-sample testing, Monte Carlo bootstrap, regime detection, anti-overfit methodology</div>
+    </div>
+    <div class="skill-row">
+      <div class="skill-label">Programming</div>
+      <div class="skill-value">Python (pandas, scikit-learn, ONNX runtime, openpyxl, matplotlib), MQL5 / MQL4 (Expert Advisor development, optimization, multi-symbol architecture)</div>
+    </div>
+    <div class="skill-row">
+      <div class="skill-label">Trading &amp; Markets</div>
+      <div class="skill-value">MetaTrader 5 (Strategy Tester, Strategy Provider setup), backtest report analysis, brokerage execution evaluation, copy trading infrastructure</div>
+    </div>
+    <div class="skill-row">
+      <div class="skill-label">Engineering &amp; Tools</div>
+      <div class="skill-value">Git/GitHub workflow, technical documentation (Markdown), HTML/CSS, WeasyPrint, agent-based orchestration</div>
+    </div>
+    <div class="skill-row">
+      <div class="skill-label">Soft Skills</div>
+      <div class="skill-value">Public technical writing, transparent failure reporting, autonomous project ownership, end-to-end delivery</div>
+    </div>
+    <div class="skill-row">
+      <div class="skill-label">Languages</div>
+      <div class="skill-value">French (native), English (professional working proficiency)</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>PUBLIC CONTRIBUTIONS</h2>
+  <ul style="list-style: none;">
+    <li style="padding-left: 5mm; position: relative; margin-bottom: 1.2mm; font-size: 9.5pt;">
+      <span style="position: absolute; left: 1mm; color: var(--accent); font-weight: 800;">▸</span>
+      Published statistical audits of EA backtests on Reddit (r/algotrading, r/IndiaAlgoTrading, r/francetrading)
+    </li>
+    <li style="padding-left: 5mm; position: relative; margin-bottom: 1.2mm; font-size: 9.5pt;">
+      <span style="position: absolute; left: 1mm; color: var(--accent); font-weight: 800;">▸</span>
+      Open methodology repository — every project decision, failure, and lesson documented and version-controlled
+    </li>
+    <li style="padding-left: 5mm; position: relative; margin-bottom: 1.2mm; font-size: 9.5pt;">
+      <span style="position: absolute; left: 1mm; color: var(--accent); font-weight: 800;">▸</span>
+      Active participation in international algo-trading communities — technical contributions, audit feedback, methodology discussion
+    </li>
+  </ul>
+</section>
+
+<div class="footer-tag">
+  FOTSO COMPANY — Quant · Audit · Research. Anti-overfit. Anti-gourou. Data first.
+</div>
+
+</body>
+</html>
